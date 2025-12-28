@@ -1,0 +1,50 @@
+# =============================================================================
+# EVG ULTIMATE TEAM - Backend Dependencies
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Core Framework
+# -----------------------------------------------------------------------------
+fastapi==0.104.1           # Modern, fast web framework for building APIs
+uvicorn[standard]==0.24.0  # ASGI server for running FastAPI
+python-multipart==0.0.6    # Required for form data and file uploads
+
+# -----------------------------------------------------------------------------
+# Database & ORM
+# -----------------------------------------------------------------------------
+sqlalchemy==2.0.23         # SQL toolkit and Object-Relational Mapping
+alembic==1.12.1            # Database migration tool for SQLAlchemy
+aiosqlite==0.19.0          # Async SQLite support for SQLAlchemy
+
+# -----------------------------------------------------------------------------
+# Data Validation & Serialization
+# -----------------------------------------------------------------------------
+pydantic==2.5.0            # Data validation using Python type annotations
+pydantic-settings==2.1.0   # Settings management using Pydantic
+
+# -----------------------------------------------------------------------------
+# Authentication & Security
+# -----------------------------------------------------------------------------
+python-jose[cryptography]==3.3.0  # JWT token generation and verification
+passlib[bcrypt]==1.7.4            # Password hashing utilities
+python-dotenv==1.0.0              # Load environment variables from .env file
+
+# -----------------------------------------------------------------------------
+# WebSocket Support
+# -----------------------------------------------------------------------------
+websockets==12.0           # WebSocket client and server implementation
+
+# -----------------------------------------------------------------------------
+# Utilities
+# -----------------------------------------------------------------------------
+python-dateutil==2.8.2     # Extensions to the standard datetime module
+
+# -----------------------------------------------------------------------------
+# Development & Testing (optional, install with: pip install -r requirements.txt -r requirements-dev.txt)
+# -----------------------------------------------------------------------------
+# pytest==7.4.3            # Testing framework
+# pytest-asyncio==0.21.1   # Async support for pytest
+# httpx==0.25.2            # HTTP client for testing FastAPI
+# black==23.11.0           # Code formatter
+# flake8==6.1.0            # Code linter
+# mypy==1.7.1              # Static type checker
