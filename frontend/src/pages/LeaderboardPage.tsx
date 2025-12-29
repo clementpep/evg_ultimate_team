@@ -24,11 +24,11 @@ export const LeaderboardPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-4xl font-display font-bold uppercase tracking-wide text-gradient-psg">Live Leaderboard</h1>
+        <h1 className="text-4xl font-display font-bold uppercase tracking-wide text-gradient-psg">Classement Live</h1>
         <div className="flex items-center gap-2">
           <div className={clsx('w-3 h-3 rounded-full', isConnected ? 'bg-fifa-green' : 'bg-gray-500')} />
           <span className="text-sm text-text-secondary font-semibold uppercase tracking-wide">
-            {isConnected ? 'Live' : 'Disconnected'}
+            {isConnected ? 'Live' : 'Déconnecté'}
           </span>
         </div>
       </div>
@@ -38,11 +38,11 @@ export const LeaderboardPage: React.FC = () => {
         {/* Header */}
         <div
           className="px-6 py-4 font-bold uppercase text-xs tracking-wider text-text-secondary"
-          style={{ background: 'rgba(26, 41, 66, 0.8)' }}
+          style={{ background: 'rgba(26, 41, 66, 0.6)' }}
         >
           <div className="grid grid-cols-[60px_1fr_80px] gap-4">
-            <div>Rank</div>
-            <div>Player</div>
+            <div>Rang</div>
+            <div>Joueur</div>
             <div className="text-right">Points</div>
           </div>
         </div>
@@ -80,7 +80,7 @@ export const LeaderboardPage: React.FC = () => {
                   </div>
                   {participant.points_today !== undefined && (
                     <p className="text-sm text-text-secondary">
-                      +{participant.points_today} today
+                      +{participant.points_today} aujourd'hui
                     </p>
                   )}
                 </div>

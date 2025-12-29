@@ -30,7 +30,7 @@ export const Card: React.FC<CardProps> = ({ children, className, hover = true })
         className
       )}
       style={{
-        background: 'rgba(26, 41, 66, 0.8)',
+        background: 'rgba(26, 41, 66, 0.6)',
       }}
     >
       {children}

@@ -3,6 +3,7 @@ import { Card } from '@components/common/Card';
 import { Button } from '@components/common/Button';
 import { Input } from '@components/common/Input';
 import { useAuth } from '@context/AuthContext';
+import { useToast } from '@context/ToastContext';
 import { useChallenges } from '@hooks/useChallenges';
 import { validateChallenge } from '@services/challengeService';
 import { addPoints } from '@services/pointsService';
@@ -11,13 +12,12 @@ import { ChallengeStatus } from '@types/index';
 
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const { challenges, refetch: refetchChallenges } = useChallenges();
   const [participants, setParticipants] = useState<any[]>([]);
   const [selectedParticipant, setSelectedParticipant] = useState('');
   const [pointsAmount, setPointsAmount] = useState('');
   const [pointsReason, setPointsReason] = useState('');
-  const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState<'success' | 'error'>('success');
 
   useEffect(() => {
     getAllParticipants().then(setParticipants);
@@ -31,12 +31,6 @@ export const AdminDashboard: React.FC = () => {
     );
   }
 
-  const showMessage = (msg: string, type: 'success' | 'error' = 'success') => {
-    setMessage(msg);
-    setMessageType(type);
-    setTimeout(() => setMessage(''), 5000);
-  };
-
   const handleValidateChallenge = async (challengeId: number, participantId: number) => {
     try {
       await validateChallenge(challengeId, {
@@ -44,11 +38,11 @@ export const AdminDashboard: React.FC = () => {
         status: ChallengeStatus.COMPLETED,
         admin_id: user.id,
       });
-      showMessage('Challenge validé avec succès !');
+      showToast('Challenge validé avec succès !', 'success');
       refetchChallenges();
       getAllParticipants().then(setParticipants);
     } catch (err) {
-      showMessage('Erreur lors de la validation', 'error');
+      showToast('Erreur lors de la validation', 'error');
     }
   };
 
@@ -62,13 +56,14 @@ export const AdminDashboard: React.FC = () => {
       };
 
       await addPoints(data);
-      showMessage(`${pointsAmount} points + crédits ajoutés à ${participants.find(p => p.id === parseInt(selectedParticipant))?.name} !`);
+      const participantName = participants.find(p => p.id === parseInt(selectedParticipant))?.name;
+      showToast(`${pointsAmount} points + crédits ajoutés à ${participantName} !`, 'success');
       setSelectedParticipant('');
       setPointsAmount('');
       setPointsReason('');
       getAllParticipants().then(setParticipants);
     } catch (err) {
-      showMessage('Erreur lors de l\'ajout de points', 'error');
+      showToast('Erreur lors de l\'ajout de points', 'error');
     }
   };
 
@@ -80,30 +75,16 @@ export const AdminDashboard: React.FC = () => {
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Header */}
       <div className="text-center">
-        <h1 className="font-display text-5xl font-black uppercase tracking-wider mb-2" style={{
-          color: '#FFFFFF',
-          textShadow: '0 0 20px rgba(218, 41, 28, 0.5), 0 0 40px rgba(0, 31, 91, 0.3)',
-        }}>
-          ADMIN DASHBOARD
+        <h1 className="font-display text-5xl font-black uppercase tracking-wider mb-2 text-gradient-psg">
+          TABLEAU DE BORD ADMIN
         </h1>
         <p className="text-text-secondary">Pilotage du jeu EVG Ultimate Team</p>
       </div>
 
-      {/* Message */}
-      {message && (
-        <div className={`border rounded-lg p-4 text-center font-semibold ${
-          messageType === 'success'
-            ? 'bg-fifa-green/20 border-fifa-green text-fifa-green'
-            : 'bg-psg-red/20 border-psg-red text-psg-red'
-        }`}>
-          {message}
-        </div>
-      )}
-
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="rounded-xl p-6 border text-center" style={{
-          background: 'rgba(26, 41, 66, 0.8)',
+          background: 'rgba(26, 41, 66, 0.6)',
           borderColor: 'rgba(255, 255, 255, 0.1)',
         }}>
           <div className="font-numbers text-4xl font-black text-fifa-green mb-2">
@@ -112,7 +93,7 @@ export const AdminDashboard: React.FC = () => {
           <div className="text-text-secondary text-sm uppercase tracking-wide">Participants</div>
         </div>
         <div className="rounded-xl p-6 border text-center" style={{
-          background: 'rgba(26, 41, 66, 0.8)',
+          background: 'rgba(26, 41, 66, 0.6)',
           borderColor: 'rgba(255, 255, 255, 0.1)',
         }}>
           <div className="font-numbers text-4xl font-black text-fifa-gold mb-2">
@@ -121,7 +102,7 @@ export const AdminDashboard: React.FC = () => {
           <div className="text-text-secondary text-sm uppercase tracking-wide">Challenges Actifs</div>
         </div>
         <div className="rounded-xl p-6 border text-center" style={{
-          background: 'rgba(26, 41, 66, 0.8)',
+          background: 'rgba(26, 41, 66, 0.6)',
           borderColor: 'rgba(255, 255, 255, 0.1)',
         }}>
           <div className="font-numbers text-4xl font-black text-psg-blue mb-2">
@@ -130,7 +111,7 @@ export const AdminDashboard: React.FC = () => {
           <div className="text-text-secondary text-sm uppercase tracking-wide">En Attente</div>
         </div>
         <div className="rounded-xl p-6 border text-center" style={{
-          background: 'rgba(26, 41, 66, 0.8)',
+          background: 'rgba(26, 41, 66, 0.6)',
           borderColor: 'rgba(255, 255, 255, 0.1)',
         }}>
           <div className="font-numbers text-4xl font-black text-psg-red mb-2">
@@ -220,6 +201,43 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </Card>
       </div>
+
+      {/* All Challenges Management */}
+      <Card>
+        <h2 className="font-display text-2xl font-bold mb-4 uppercase tracking-wide">Tous les Défis</h2>
+        <div className="space-y-3">
+          {challenges.length === 0 ? (
+            <p className="text-text-tertiary text-center py-8">Aucun défi disponible</p>
+          ) : (
+            challenges.map((challenge) => (
+              <div key={challenge.id} className="border border-white/10 rounded-lg p-4 flex items-center justify-between" style={{
+                background: 'rgba(0, 0, 0, 0.2)',
+              }}>
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h3 className="text-lg font-bold text-white">{challenge.title}</h3>
+                    <span className={`text-xs px-2 py-1 rounded font-semibold uppercase ${
+                      challenge.status === ChallengeStatus.ACTIVE
+                        ? 'bg-fifa-green/20 text-fifa-green'
+                        : challenge.status === ChallengeStatus.COMPLETED
+                        ? 'bg-psg-red/20 text-psg-red'
+                        : 'bg-fifa-gold/20 text-fifa-gold'
+                    }`}>
+                      {challenge.status === ChallengeStatus.ACTIVE ? 'Actif' : challenge.status === ChallengeStatus.COMPLETED ? 'Complété' : 'En attente'}
+                    </span>
+                  </div>
+                  <p className="text-text-secondary text-sm mb-2">{challenge.description}</p>
+                  <div className="flex items-center gap-3 text-sm">
+                    <span className="font-numbers text-fifa-gold font-bold">{challenge.points} pts</span>
+                    <span className="text-text-tertiary">•</span>
+                    <span className="text-text-tertiary capitalize">{challenge.type}</span>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </Card>
 
       {/* Active Challenges to Validate */}
       <Card>

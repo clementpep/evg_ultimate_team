@@ -42,45 +42,38 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       >
         <div className="container mx-auto px-4 sm:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-between py-3 sm:h-20">
-            <Link to="/" className="text-xl sm:text-3xl font-display font-black uppercase tracking-wider mb-2 sm:mb-0" style={{
-              color: '#FFFFFF',
-              textShadow: '0 0 15px rgba(218, 41, 28, 0.4), 0 0 30px rgba(0, 31, 91, 0.2)',
-            }}>
+            <Link to="/" className="text-xl sm:text-3xl font-display font-black uppercase tracking-wider mb-2 sm:mb-0 text-gradient-psg">
               EVG ULTIMATE TEAM
             </Link>
 
             <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
-              <Link
-                to="/"
-                className="text-text-secondary font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 transition-all hover:text-white hover:bg-psg-red/10"
-              >
-                Home
-              </Link>
-              <Link
-                to="/leaderboard"
-                className="text-text-secondary font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 transition-all hover:text-white hover:bg-psg-red/10"
-              >
-                Leaderboard
-              </Link>
-              <Link
-                to="/challenges"
-                className="text-text-secondary font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 transition-all hover:text-white hover:bg-psg-red/10"
-              >
-                Challenges
-              </Link>
-              <Link
-                to="/packs"
-                className="text-text-secondary font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 transition-all hover:text-white hover:bg-psg-red/10"
-              >
-                Packs
-              </Link>
-              {user?.is_admin && (
-                <Link
-                  to="/admin"
-                  className="text-text-secondary font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 transition-all hover:text-white hover:bg-psg-red/10"
-                >
-                  Admin
-                </Link>
+              {!user?.is_admin && (
+                <>
+                  <Link
+                    to="/"
+                    className="text-text-secondary font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 transition-all hover:text-white hover:bg-psg-red/10"
+                  >
+                    Accueil
+                  </Link>
+                  <Link
+                    to="/leaderboard"
+                    className="text-text-secondary font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 transition-all hover:text-white hover:bg-psg-red/10"
+                  >
+                    Classement
+                  </Link>
+                  <Link
+                    to="/challenges"
+                    className="text-text-secondary font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 transition-all hover:text-white hover:bg-psg-red/10"
+                  >
+                    Défis
+                  </Link>
+                  <Link
+                    to="/packs"
+                    className="text-text-secondary font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 transition-all hover:text-white hover:bg-psg-red/10"
+                  >
+                    Packs
+                  </Link>
+                </>
               )}
               <div className="flex items-center gap-1 sm:gap-2 pl-2 sm:pl-4 ml-2 sm:ml-4 border-l border-white/10">
                 <span className="hidden sm:inline text-xs sm:text-sm text-white font-semibold">{user?.username}</span>
@@ -89,7 +82,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   className="text-xs !py-1.5 !px-3 sm:!px-4 !font-bold"
                   onClick={logout}
                 >
-                  Logout
+                  Déconnexion
                 </Button>
               </div>
             </div>
@@ -113,6 +106,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 // Main App Component
 const AppContent: React.FC = () => {
+  const { user } = useAuth();
+
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
@@ -121,7 +116,7 @@ const AppContent: React.FC = () => {
         element={
           <ProtectedRoute>
             <Layout>
-              <HomePage />
+              {user?.is_admin ? <Navigate to="/admin" replace /> : <HomePage />}
             </Layout>
           </ProtectedRoute>
         }

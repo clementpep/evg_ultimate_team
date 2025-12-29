@@ -27,11 +27,11 @@ export const ChallengesPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-4xl font-heading text-gradient-psg">Challenges</h1>
+      <h1 className="text-4xl font-heading text-gradient-psg">Défis</h1>
 
       {/* Pending Challenges */}
       <div>
-        <h2 className="text-2xl font-heading mb-4">📋 Available ({groupedChallenges.pending.length})</h2>
+        <h2 className="text-2xl font-heading mb-4">📋 Disponibles ({groupedChallenges.pending.length})</h2>
         <div className="grid gap-4">
           {groupedChallenges.pending.map((challenge) => (
             <Card key={challenge.id}>
@@ -57,7 +57,7 @@ export const ChallengesPage: React.FC = () => {
       {/* Active Challenges */}
       {groupedChallenges.active.length > 0 && (
         <div>
-          <h2 className="text-2xl font-heading mb-4">⚡ In Progress ({groupedChallenges.active.length})</h2>
+          <h2 className="text-2xl font-heading mb-4">⚡ En Cours ({groupedChallenges.active.length})</h2>
           <div className="grid gap-4">
             {groupedChallenges.active.map((challenge) => (
               <Card key={challenge.id} className="border-blue-500">
@@ -66,7 +66,7 @@ export const ChallengesPage: React.FC = () => {
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-2xl">{getChallengeIcon(challenge.type)}</span>
                       <h3 className="text-xl font-semibold">{challenge.title}</h3>
-                      <span className="badge status-active">Active</span>
+                      <span className="badge status-active">Actif</span>
                     </div>
                     <p className="text-gray-400">{challenge.description}</p>
                   </div>
@@ -84,7 +84,7 @@ export const ChallengesPage: React.FC = () => {
       {/* Completed Challenges */}
       {groupedChallenges.completed.length > 0 && (
         <div>
-          <h2 className="text-2xl font-heading mb-4">✅ Completed ({groupedChallenges.completed.length})</h2>
+          <h2 className="text-2xl font-heading mb-4">✅ Complétés ({groupedChallenges.completed.length})</h2>
           <div className="grid gap-4">
             {groupedChallenges.completed.map((challenge) => (
               <Card key={challenge.id} className="opacity-75">
@@ -93,7 +93,7 @@ export const ChallengesPage: React.FC = () => {
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-2xl">{getChallengeIcon(challenge.type)}</span>
                       <h3 className="text-xl font-semibold">{challenge.title}</h3>
-                      <span className="badge status-completed">Completed</span>
+                      <span className="badge status-completed">Complété</span>
                     </div>
                   </div>
                   <div className="text-right ml-4">

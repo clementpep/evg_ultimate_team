@@ -83,7 +83,7 @@ export const PacksPage = () => {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Page Header */}
       <div className="mb-12 text-center">
-        <h1 className="font-display text-6xl font-black mb-4 uppercase tracking-wider">
+        <h1 className="font-display text-6xl font-black mb-4 uppercase tracking-wider text-gradient-psg">
           MES PACKS
         </h1>
         <p className="text-text-secondary text-lg">
@@ -92,7 +92,7 @@ export const PacksPage = () => {
         {/* Display Credits and Points */}
         <div className="mt-6 flex justify-center gap-6">
           <div className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border" style={{
-            background: 'rgba(26, 41, 66, 0.8)',
+            background: 'rgba(26, 41, 66, 0.6)',
             borderColor: 'rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(10px)',
           }}>
@@ -100,7 +100,7 @@ export const PacksPage = () => {
             <span className="font-numbers text-2xl font-bold text-fifa-gold">{userCredits}</span>
           </div>
           <div className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border" style={{
-            background: 'rgba(26, 41, 66, 0.8)',
+            background: 'rgba(26, 41, 66, 0.6)',
             borderColor: 'rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(10px)',
           }}>
@@ -122,7 +122,7 @@ export const PacksPage = () => {
         <div
           className="grid grid-cols-2 sm:flex sm:flex-row gap-3 sm:gap-6 rounded-2xl p-4 sm:p-6 border w-full max-w-2xl sm:w-auto"
           style={{
-            background: 'rgba(26, 41, 66, 0.8)',
+            background: 'rgba(26, 41, 66, 0.6)',
             borderColor: 'rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(10px)',
           }}

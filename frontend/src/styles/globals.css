@@ -42,6 +42,14 @@
     @apply font-numbers font-bold;
   }
 
+  /* Gradient text for titles */
+  .text-gradient-psg {
+    background: linear-gradient(135deg, #DA291C 0%, #001F5B 50%, #DA291C 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
   /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 10px;
@@ -79,18 +87,18 @@
 
   .card-psg {
     @apply border border-white/10 rounded-xl p-6 shadow-lg transition-all hover:shadow-2xl hover:-translate-y-1;
-    background: rgba(26, 41, 66, 0.8);
+    background: rgba(26, 41, 66, 0.6);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   }
 
   .card-psg:hover {
-    background: rgba(34, 58, 94, 0.9);
+    background: rgba(34, 58, 94, 0.7);
   }
 
   /* Uniform background for all sections */
   .section-bg {
-    background: rgba(26, 41, 66, 0.8);
+    background: rgba(26, 41, 66, 0.6);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   }

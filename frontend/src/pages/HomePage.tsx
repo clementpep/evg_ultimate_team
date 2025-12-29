@@ -5,7 +5,9 @@ import { Card } from '@components/common/Card';
 import { Loader } from '@components/common/Loader';
 import { getMyProfile } from '@services/participantService';
 import { getTop3, getDailyLeader } from '@services/leaderboardService';
+import { packService } from '@services/packService';
 import { Participant, ParticipantWithRank } from '@types/index';
+import { PackOpening } from '@types/pack';
 import { formatRank } from '@utils/formatters';
 
 export const HomePage: React.FC = () => {
@@ -13,19 +15,22 @@ export const HomePage: React.FC = () => {
   const [profile, setProfile] = useState<Participant | null>(null);
   const [podium, setPodium] = useState<ParticipantWithRank[]>([]);
   const [dailyLeader, setDailyLeader] = useState<ParticipantWithRank | null>(null);
+  const [packHistory, setPackHistory] = useState<PackOpening[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [profileData, podiumData, dailyData] = await Promise.all([
+        const [profileData, podiumData, dailyData, historyData] = await Promise.all([
           getMyProfile(),
           getTop3(),
           getDailyLeader(),
+          packService.getHistory(),
         ]);
         setProfile(profileData);
         setPodium(podiumData);
         setDailyLeader(dailyData);
+        setPackHistory(historyData);
       } catch (err) {
         console.error('Failed to fetch home data:', err);
       } finally {
@@ -53,7 +58,7 @@ export const HomePage: React.FC = () => {
         <div
           className="rounded-lg p-8 border backdrop-blur-sm"
           style={{
-            background: 'rgba(26, 41, 66, 0.8)',
+            background: 'rgba(26, 41, 66, 0.6)',
             borderColor: 'rgba(255, 255, 255, 0.1)',
           }}
         >
@@ -65,6 +70,43 @@ export const HomePage: React.FC = () => {
             <p className="text-xs text-text-tertiary mt-2">1 point = 1 crédit pour acheter des packs</p>
           </div>
         </div>
+      )}
+
+      {/* Mes Avantages Section */}
+      {packHistory.length > 0 && (
+        <Card>
+          <h2 className="text-2xl font-heading mb-4">🎁 Mes Avantages Obtenus</h2>
+          <div className="space-y-3 max-h-80 overflow-y-auto">
+            {packHistory.map((opening) => (
+              <div
+                key={opening.id}
+                className="flex items-center justify-between p-3 rounded-lg border border-white/5 hover:border-white/10 transition-colors"
+                style={{ background: 'rgba(0, 0, 0, 0.2)' }}
+              >
+                <div className="flex-1">
+                  <h3 className="font-semibold text-white">{opening.reward_name}</h3>
+                  {opening.reward_description && (
+                    <p className="text-sm text-text-tertiary mt-1">{opening.reward_description}</p>
+                  )}
+                  <p className="text-xs text-text-tertiary mt-1">
+                    Obtenu le {new Date(opening.opened_at).toLocaleDateString('fr-FR')}
+                  </p>
+                </div>
+                <div className="text-right ml-4">
+                  <span className="text-xs px-2 py-1 rounded font-semibold uppercase bg-fifa-gold/20 text-fifa-gold">
+                    {opening.pack_tier}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <Link
+            to="/packs"
+            className="text-psg-red hover:text-white font-semibold mt-4 block text-center transition-colors uppercase tracking-wide"
+          >
+            Ouvrir plus de packs →
+          </Link>
+        </Card>
       )}
 
       <div className="grid md:grid-cols-2 gap-6">

@@ -33,31 +33,28 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
-        <h1 className="font-display text-5xl sm:text-6xl font-black text-center mb-3 uppercase tracking-wider" style={{
-          color: '#FFFFFF',
-          textShadow: '0 0 20px rgba(218, 41, 28, 0.5), 0 0 40px rgba(0, 31, 91, 0.3)',
-        }}>
+        <h1 className="font-display text-5xl sm:text-6xl font-black text-center mb-3 uppercase tracking-wider text-gradient-psg">
           EVG ULTIMATE TEAM
         </h1>
-        <p className="text-center text-text-secondary mb-8 font-semibold">Paul's Bachelor Party 2026</p>
+        <p className="text-center text-text-secondary mb-8 font-semibold">EVG Paul CHAUVIN 2026</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
-            label="Username"
+            label="Nom d'utilisateur"
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="Enter your name"
+            placeholder="Entrez votre nom"
             required
           />
 
           {isAdmin && (
             <Input
-              label="Password"
+              label="Mot de passe"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Admin password"
+              placeholder="Mot de passe admin"
               required
             />
           )}
@@ -69,7 +66,7 @@ export const LoginPage: React.FC = () => {
           )}
 
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? 'Logging in...' : isAdmin ? 'Admin Login' : 'Login'}
+            {isLoading ? 'Connexion...' : isAdmin ? 'Connexion Admin' : 'Connexion'}
           </Button>
 
           <button
@@ -77,7 +74,7 @@ export const LoginPage: React.FC = () => {
             onClick={() => setIsAdmin(!isAdmin)}
             className="text-sm text-gray-400 hover:text-white w-full text-center"
           >
-            {isAdmin ? 'Participant login' : 'Admin login'}
+            {isAdmin ? 'Connexion participant' : 'Connexion admin'}
           </button>
         </form>
       </Card>
