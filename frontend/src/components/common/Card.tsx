@@ -23,11 +23,15 @@ export const Card: React.FC<CardProps> = ({ children, className, hover = true })
   return (
     <div
       className={clsx(
-        'bg-bg-card rounded-xl p-6 shadow-lg transition-all duration-300',
-        'border border-white/5',
-        hover && 'hover:bg-bg-cardHover hover:shadow-2xl hover:-translate-y-1 hover:border-white/10',
+        'rounded-xl p-6 shadow-lg transition-all duration-300',
+        'border border-white/10',
+        'backdrop-blur-md',
+        hover && 'hover:shadow-2xl hover:-translate-y-1 hover:border-white/20',
         className
       )}
+      style={{
+        background: 'rgba(26, 41, 66, 0.75)',
+      }}
     >
       {children}
     </div>
