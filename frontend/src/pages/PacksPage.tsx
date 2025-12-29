@@ -92,7 +92,7 @@ export const PacksPage = () => {
         {/* Display Credits and Points */}
         <div className="mt-6 flex justify-center gap-6">
           <div className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border" style={{
-            background: 'rgba(26, 41, 66, 0.75)',
+            background: 'rgba(26, 41, 66, 0.8)',
             borderColor: 'rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(10px)',
           }}>
@@ -100,7 +100,7 @@ export const PacksPage = () => {
             <span className="font-numbers text-2xl font-bold text-fifa-gold">{userCredits}</span>
           </div>
           <div className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border" style={{
-            background: 'rgba(26, 41, 66, 0.75)',
+            background: 'rgba(26, 41, 66, 0.8)',
             borderColor: 'rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(10px)',
           }}>
@@ -122,8 +122,8 @@ export const PacksPage = () => {
         <div
           className="grid grid-cols-2 sm:flex sm:flex-row gap-3 sm:gap-6 rounded-2xl p-4 sm:p-6 border w-full max-w-2xl sm:w-auto"
           style={{
-            background: 'linear-gradient(135deg, rgba(0, 31, 91, 0.4) 0%, rgba(26, 41, 66, 0.6) 100%)',
-            borderColor: 'rgba(255, 255, 255, 0.08)',
+            background: 'rgba(26, 41, 66, 0.8)',
+            borderColor: 'rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(10px)',
           }}
         >

@@ -79,13 +79,20 @@
 
   .card-psg {
     @apply border border-white/10 rounded-xl p-6 shadow-lg transition-all hover:shadow-2xl hover:-translate-y-1;
-    background: rgba(26, 41, 66, 0.75);
+    background: rgba(26, 41, 66, 0.8);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
   }
 
   .card-psg:hover {
-    background: rgba(34, 58, 94, 0.85);
+    background: rgba(34, 58, 94, 0.9);
+  }
+
+  /* Uniform background for all sections */
+  .section-bg {
+    background: rgba(26, 41, 66, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
   }
 
   /* Input styles */

@@ -38,7 +38,7 @@ export const LeaderboardPage: React.FC = () => {
         {/* Header */}
         <div
           className="px-6 py-4 font-bold uppercase text-xs tracking-wider text-text-secondary"
-          style={{ background: 'rgba(0, 31, 91, 0.6)' }}
+          style={{ background: 'rgba(26, 41, 66, 0.8)' }}
         >
           <div className="grid grid-cols-[60px_1fr_80px] gap-4">
             <div>Rank</div>

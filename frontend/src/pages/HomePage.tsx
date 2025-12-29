@@ -53,8 +53,8 @@ export const HomePage: React.FC = () => {
         <div
           className="rounded-lg p-8 border backdrop-blur-sm"
           style={{
-            background: 'linear-gradient(135deg, rgba(0, 31, 91, 0.4) 0%, rgba(26, 41, 66, 0.6) 100%)',
-            borderColor: 'rgba(255, 255, 255, 0.08)',
+            background: 'rgba(26, 41, 66, 0.8)',
+            borderColor: 'rgba(255, 255, 255, 0.1)',
           }}
         >
           <div className="text-center">
@@ -62,6 +62,7 @@ export const HomePage: React.FC = () => {
               {profile.total_points}
             </p>
             <p className="text-text-secondary font-semibold uppercase tracking-wide text-sm">Total Points</p>
+            <p className="text-xs text-text-tertiary mt-2">1 point = 1 crédit pour acheter des packs</p>
           </div>
         </div>
       )}

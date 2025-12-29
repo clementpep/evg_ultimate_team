@@ -33,10 +33,13 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
-        <h1 className="text-4xl font-heading text-center mb-2 text-gradient-psg">
+        <h1 className="font-display text-5xl sm:text-6xl font-black text-center mb-3 uppercase tracking-wider" style={{
+          color: '#FFFFFF',
+          textShadow: '0 0 20px rgba(218, 41, 28, 0.5), 0 0 40px rgba(0, 31, 91, 0.3)',
+        }}>
           EVG ULTIMATE TEAM
         </h1>
-        <p className="text-center text-gray-400 mb-8">Paul's Bachelor Party 2026</p>
+        <p className="text-center text-text-secondary mb-8 font-semibold">Paul's Bachelor Party 2026</p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input

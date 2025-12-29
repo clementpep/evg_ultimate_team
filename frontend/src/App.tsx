@@ -42,8 +42,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       >
         <div className="container mx-auto px-4 sm:px-8">
           <div className="flex flex-col sm:flex-row items-center justify-between py-3 sm:h-20">
-            <Link to="/" className="text-lg sm:text-2xl font-display font-bold text-gradient-psg uppercase tracking-wide mb-2 sm:mb-0">
-              EVG ULTIMATE
+            <Link to="/" className="text-xl sm:text-3xl font-display font-black uppercase tracking-wider mb-2 sm:mb-0" style={{
+              color: '#FFFFFF',
+              textShadow: '0 0 15px rgba(218, 41, 28, 0.4), 0 0 30px rgba(0, 31, 91, 0.2)',
+            }}>
+              EVG ULTIMATE TEAM
             </Link>
 
             <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
