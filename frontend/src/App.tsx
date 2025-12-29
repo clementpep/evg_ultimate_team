@@ -1,10 +1,12 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@context/AuthContext';
+import { ToastProvider } from '@context/ToastContext';
 import { LoginPage } from '@pages/LoginPage';
 import { HomePage } from '@pages/HomePage';
 import { LeaderboardPage } from '@pages/LeaderboardPage';
 import { ChallengesPage } from '@pages/ChallengesPage';
+import { PacksPage } from '@pages/PacksPage';
 import { AdminDashboard } from '@pages/AdminDashboard';
 import { Button } from '@components/common/Button';
 
@@ -29,34 +31,59 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <div className="min-h-screen">
-      {/* Navigation */}
-      <nav className="bg-psg-navy/50 backdrop-blur-sm border-b border-gray-800 sticky top-0 z-50">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <Link to="/" className="text-2xl font-heading text-gradient-psg">
-              EVG ULTIMATE TEAM
+      {/* Navigation - Following DESIGN_SYSTEM.md specs - Mobile First */}
+      <nav
+        className="sticky top-0 z-50 border-b shadow-md backdrop-blur-sm"
+        style={{
+          background: '#0A1628',
+          minHeight: '60px',
+          borderColor: 'rgba(255, 255, 255, 0.05)',
+        }}
+      >
+        <div className="container mx-auto px-4 sm:px-8">
+          <div className="flex flex-col sm:flex-row items-center justify-between py-3 sm:h-20">
+            <Link to="/" className="text-lg sm:text-2xl font-display font-bold text-gradient-psg uppercase tracking-wide mb-2 sm:mb-0">
+              EVG ULTIMATE
             </Link>
 
-            <div className="flex items-center gap-4">
-              <Link to="/" className="text-gray-300 hover:text-white transition-colors">
+            <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
+              <Link
+                to="/"
+                className="text-text-secondary font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 transition-all hover:text-white hover:bg-psg-red/10"
+              >
                 Home
               </Link>
-              <Link to="/leaderboard" className="text-gray-300 hover:text-white transition-colors">
+              <Link
+                to="/leaderboard"
+                className="text-text-secondary font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 transition-all hover:text-white hover:bg-psg-red/10"
+              >
                 Leaderboard
               </Link>
-              <Link to="/challenges" className="text-gray-300 hover:text-white transition-colors">
+              <Link
+                to="/challenges"
+                className="text-text-secondary font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 transition-all hover:text-white hover:bg-psg-red/10"
+              >
                 Challenges
               </Link>
+              <Link
+                to="/packs"
+                className="text-text-secondary font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 transition-all hover:text-white hover:bg-psg-red/10"
+              >
+                Packs
+              </Link>
               {user?.is_admin && (
-                <Link to="/admin" className="text-gray-300 hover:text-white transition-colors">
+                <Link
+                  to="/admin"
+                  className="text-text-secondary font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 transition-all hover:text-white hover:bg-psg-red/10"
+                >
                   Admin
                 </Link>
               )}
-              <div className="flex items-center gap-2 pl-4 border-l border-gray-700">
-                <span className="text-sm text-gray-400">{user?.username}</span>
+              <div className="flex items-center gap-1 sm:gap-2 pl-2 sm:pl-4 ml-2 sm:ml-4 border-l border-white/10">
+                <span className="hidden sm:inline text-xs sm:text-sm text-white font-semibold">{user?.username}</span>
                 <Button
-                  variant="secondary"
-                  className="text-sm py-1 px-3"
+                  variant="primary"
+                  className="text-xs !py-1.5 !px-3 sm:!px-4 !font-bold"
                   onClick={logout}
                 >
                   Logout
@@ -117,6 +144,16 @@ const AppContent: React.FC = () => {
         }
       />
       <Route
+        path="/packs"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <PacksPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/admin"
         element={
           <ProtectedRoute>
@@ -135,7 +172,9 @@ const App: React.FC = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppContent />
+        <ToastProvider>
+          <AppContent />
+        </ToastProvider>
       </AuthProvider>
     </BrowserRouter>
   );

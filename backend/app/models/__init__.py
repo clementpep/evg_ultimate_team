@@ -13,12 +13,16 @@ from app.models.challenge import (
     challenge_completions
 )
 from app.models.points_transaction import PointsTransaction
+from app.models.pack_reward import PackReward
+from app.models.pack_opening import PackOpening
 
 __all__ = [
     # Models
     "Participant",
     "Challenge",
     "PointsTransaction",
+    "PackReward",
+    "PackOpening",
     # Enums
     "ChallengeType",
     "ChallengeStatus",

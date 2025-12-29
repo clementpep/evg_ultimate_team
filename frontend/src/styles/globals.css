@@ -11,27 +11,18 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
-    /* PSG Colors */
-    --color-psg-blue: #004170;
-    --color-psg-red: #DA291C;
-    --color-psg-navy: #001E41;
-
-    /* FIFA Colors */
-    --color-fifa-gold: #D4AF37;
-    --color-fifa-silver: #C0C0C0;
-    --color-fifa-bronze: #CD7F32;
-    --color-fifa-green: #00FF41;
-    --color-fifa-dark: #0A0A0A;
-  }
-
   body {
-    @apply bg-gradient-to-br from-psg-navy to-psg-blue text-white font-body;
+    @apply bg-bg-primary text-text-primary font-body;
+    background: linear-gradient(135deg, #0A1628 0%, #152238 100%);
     min-height: 100vh;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-heading uppercase tracking-wide;
+  h1, h2, h3, h4 {
+    @apply font-display font-bold;
+  }
+
+  .stat-number {
+    @apply font-numbers font-bold;
   }
 
   /* Custom scrollbar */
@@ -53,43 +44,24 @@
 }
 
 @layer components {
-  /* FIFA-style card */
-  .fifa-card {
-    @apply bg-gradient-to-br from-fifa-dark to-gray-900 rounded-lg shadow-lg border border-gray-700 overflow-hidden transition-all duration-300;
-  }
-
-  .fifa-card:hover {
-    @apply transform -translate-y-1 shadow-2xl;
-  }
-
-  /* Pack tier cards */
-  .pack-bronze {
-    @apply border-2 border-fifa-bronze shadow-[0_0_20px_rgba(205,127,50,0.5)];
-  }
-
-  .pack-silver {
-    @apply border-2 border-fifa-silver shadow-[0_0_20px_rgba(192,192,192,0.5)];
-  }
-
-  .pack-gold {
-    @apply border-2 border-fifa-gold shadow-[0_0_20px_rgba(212,175,55,0.5)];
-  }
-
-  /* Button styles */
   .btn-primary {
-    @apply bg-psg-blue hover:bg-psg-red text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply bg-psg-red text-white font-bold uppercase tracking-wide px-6 py-3 rounded-lg shadow-md transition-all hover:shadow-glow hover:-translate-y-0.5;
   }
 
   .btn-secondary {
-    @apply bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors duration-200;
+    @apply bg-psg-navy text-white font-bold uppercase tracking-wide px-6 py-3 rounded-lg shadow-md transition-all hover:shadow-glow-blue hover:-translate-y-0.5;
   }
 
   .btn-danger {
-    @apply bg-psg-red hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-red-600 text-white hover:shadow-red-500/50 font-bold uppercase tracking-wide px-6 py-3 rounded-lg shadow-md transition-all;
   }
 
   .btn-success {
-    @apply bg-fifa-green hover:bg-green-500 text-black font-semibold py-2 px-4 rounded-lg transition-colors duration-200;
+    @apply bg-fifa-green text-black hover:shadow-fifa-green/50 font-bold uppercase tracking-wide px-6 py-3 rounded-lg shadow-md transition-all;
+  }
+
+  .card-psg {
+    @apply bg-bg-card border border-white/10 rounded-xl p-6 shadow-lg transition-all hover:bg-bg-cardHover hover:shadow-2xl hover:-translate-y-1;
   }
 
   /* Input styles */

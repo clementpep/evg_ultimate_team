@@ -38,6 +38,7 @@ websockets==12.0           # WebSocket client and server implementation
 # Utilities
 # -----------------------------------------------------------------------------
 python-dateutil==2.8.2     # Extensions to the standard datetime module
+apscheduler==3.10.4        # Advanced Python Scheduler for background jobs
 
 # -----------------------------------------------------------------------------
 # Development & Testing (optional, install with: pip install -r requirements.txt -r requirements-dev.txt)

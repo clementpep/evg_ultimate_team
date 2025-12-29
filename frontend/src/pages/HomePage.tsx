@@ -50,14 +50,20 @@ export const HomePage: React.FC = () => {
       </div>
 
       {profile && (
-        <Card>
+        <div
+          className="rounded-lg p-8 border backdrop-blur-sm"
+          style={{
+            background: 'linear-gradient(135deg, rgba(0, 31, 91, 0.4) 0%, rgba(26, 41, 66, 0.6) 100%)',
+            borderColor: 'rgba(255, 255, 255, 0.08)',
+          }}
+        >
           <div className="text-center">
-            <p className="text-6xl font-heading text-gradient-gold mb-2">
+            <p className="text-6xl font-numbers font-black text-gradient-gold mb-2">
               {profile.total_points}
             </p>
-            <p className="text-gray-400">Total Points</p>
+            <p className="text-text-secondary font-semibold uppercase tracking-wide text-sm">Total Points</p>
           </div>
-        </Card>
+        </div>
       )}
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -76,7 +82,10 @@ export const HomePage: React.FC = () => {
               </div>
             ))}
           </div>
-          <Link to="/leaderboard" className="text-psg-blue hover:text-psg-red mt-4 block text-center">
+          <Link
+            to="/leaderboard"
+            className="text-psg-red hover:text-white font-semibold mt-4 block text-center transition-colors uppercase tracking-wide"
+          >
             View Full Leaderboard →
           </Link>
         </Card>

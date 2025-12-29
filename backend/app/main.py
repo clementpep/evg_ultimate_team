@@ -15,9 +15,11 @@ from app.routes import (
     participants_router,
     challenges_router,
     points_router,
-    leaderboard_router
+    leaderboard_router,
+    packs_router
 )
 from app.websocket.leaderboard import leaderboard_websocket_endpoint
+from app.tasks import start_scheduler, shutdown_scheduler
 from app.utils.logger import logger
 from app.utils.exceptions import EVGException, format_exception_response
 
@@ -52,10 +54,18 @@ async def lifespan(app: FastAPI):
     init_db()
     logger.info("Database initialized")
 
+    # Start pack scheduler
+    start_scheduler()
+    logger.info("Pack scheduler started")
+
     yield
 
     # Shutdown
     logger.info("Shutting down application")
+
+    # Stop pack scheduler
+    shutdown_scheduler()
+    logger.info("Pack scheduler stopped")
 
 
 # =============================================================================
@@ -139,6 +149,7 @@ app.include_router(participants_router, prefix="/api")
 app.include_router(challenges_router, prefix="/api")
 app.include_router(points_router, prefix="/api")
 app.include_router(leaderboard_router, prefix="/api")
+app.include_router(packs_router, prefix="/api")
 
 
 # =============================================================================

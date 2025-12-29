@@ -56,6 +56,13 @@ class Participant(Base):
         comment="True if this participant is the groom (Paul)"
     )
 
+    has_received_welcome_pack = Column(
+        Boolean,
+        default=False,
+        nullable=False,
+        comment="True if participant has received welcome pack (1 silver)"
+    )
+
     # Points
     total_points = Column(
         Integer,
@@ -103,6 +110,14 @@ class Participant(Base):
 
     # Relationship to challenges (many-to-many through association table)
     # This will be defined when we create the Challenge model
+
+    # Relationship to pack openings
+    pack_openings = relationship(
+        "PackOpening",
+        back_populates="participant",
+        cascade="all, delete-orphan",
+        lazy="dynamic"
+    )
 
     # ==========================================================================
     # Methods

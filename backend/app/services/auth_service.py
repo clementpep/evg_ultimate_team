@@ -15,7 +15,7 @@ from app.utils.security import (
     create_admin_token_data
 )
 from app.utils.exceptions import InvalidCredentialsError
-from app.utils.logger import log_auth_attempt
+from app.utils.logger import log_auth_attempt, logger
 
 
 # =============================================================================
@@ -57,6 +57,13 @@ def authenticate_participant(
         raise InvalidCredentialsError(
             detail=f"No participant found with username '{login_data.username}'"
         )
+
+    # Give welcome pack (1 silver) on first login
+    if not participant.has_received_welcome_pack:
+        participant.add_pack("silver")
+        participant.has_received_welcome_pack = True
+        db.commit()
+        logger.info(f"Welcome pack (1 silver) given to {participant.name} on first login")
 
     # Create token data
     token_data = create_participant_token_data(

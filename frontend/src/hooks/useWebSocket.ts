@@ -30,7 +30,25 @@ export const useWebSocket = (endpoint: string, options: UseWebSocketOptions = {}
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Store callbacks in refs to avoid recreating connect function
+  const onMessageRef = useRef(onMessage);
+  const onConnectRef = useRef(onConnect);
+  const onDisconnectRef = useRef(onDisconnect);
+
+  // Update refs when callbacks change
+  useEffect(() => {
+    onMessageRef.current = onMessage;
+    onConnectRef.current = onConnect;
+    onDisconnectRef.current = onDisconnect;
+  }, [onMessage, onConnect, onDisconnect]);
+
   const connect = useCallback(() => {
+    // Close existing connection if any
+    if (wsRef.current) {
+      wsRef.current.close();
+      wsRef.current = null;
+    }
+
     try {
       // Get authentication token from localStorage
       const token = localStorage.getItem('auth_token');
@@ -46,14 +64,14 @@ export const useWebSocket = (endpoint: string, options: UseWebSocketOptions = {}
         console.log('WebSocket connected');
         setIsConnected(true);
         wsRef.current = ws;
-        onConnect?.();
+        onConnectRef.current?.();
       };
 
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
           setLastMessage(data);
-          onMessage?.(data);
+          onMessageRef.current?.(data);
         } catch (err) {
           console.error('Failed to parse WebSocket message:', err);
         }
@@ -63,7 +81,7 @@ export const useWebSocket = (endpoint: string, options: UseWebSocketOptions = {}
         console.log('WebSocket disconnected');
         setIsConnected(false);
         wsRef.current = null;
-        onDisconnect?.();
+        onDisconnectRef.current?.();
 
         // Attempt to reconnect
         if (reconnect) {
@@ -80,7 +98,7 @@ export const useWebSocket = (endpoint: string, options: UseWebSocketOptions = {}
     } catch (err) {
       console.error('Failed to create WebSocket connection:', err);
     }
-  }, [endpoint, onMessage, onConnect, onDisconnect, reconnect, reconnectInterval]);
+  }, [endpoint, reconnect, reconnectInterval]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
@@ -110,7 +128,8 @@ export const useWebSocket = (endpoint: string, options: UseWebSocketOptions = {}
     return () => {
       disconnect();
     };
-  }, [connect, disconnect]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [endpoint]); // Only reconnect if endpoint changes
 
   return {
     isConnected,

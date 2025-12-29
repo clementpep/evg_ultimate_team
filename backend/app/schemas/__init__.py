@@ -49,6 +49,16 @@ from app.schemas.auth import (
     CurrentUser
 )
 
+# Pack schemas
+from app.schemas.pack import (
+    PackInventoryResponse,
+    PackRewardResponse,
+    PackOpenRequest,
+    PackOpenResponse,
+    PackHistoryItem,
+    PackCostsResponse
+)
+
 __all__ = [
     # Common
     "APIResponse",
@@ -80,4 +90,11 @@ __all__ = [
     "AdminLogin",
     "AuthToken",
     "CurrentUser",
+    # Pack
+    "PackInventoryResponse",
+    "PackRewardResponse",
+    "PackOpenRequest",
+    "PackOpenResponse",
+    "PackHistoryItem",
+    "PackCostsResponse",
 ]
