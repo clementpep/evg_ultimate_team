@@ -69,7 +69,15 @@ class Participant(Base):
         default=0,
         nullable=False,
         index=True,
-        comment="Current total points accumulated"
+        comment="Current total points accumulated (never decreases)"
+    )
+
+    # Pack Credits - separate from points, used to purchase packs
+    pack_credits = Column(
+        Integer,
+        default=0,
+        nullable=False,
+        comment="Credits for purchasing packs (1 point earned = 1 credit)"
     )
 
     # Pack Inventory (Phase 2 feature, prepared for future use)
@@ -125,7 +133,10 @@ class Participant(Base):
 
     def add_points(self, amount: int) -> None:
         """
-        Add points to the participant's total.
+        Add points to the participant's total AND pack credits.
+
+        Points are used for leaderboard ranking and never decrease.
+        Pack credits are also added (1:1 ratio) and can be spent on packs.
 
         Args:
             amount: Points to add (positive integer)
@@ -134,24 +145,27 @@ class Participant(Base):
             ValueError: If amount is negative
         """
         if amount < 0:
-            raise ValueError("Cannot add negative points. Use subtract_points() instead.")
+            raise ValueError("Cannot add negative points.")
         self.total_points += amount
+        self.pack_credits += amount
 
-    def subtract_points(self, amount: int) -> None:
+    def subtract_credits(self, amount: int) -> None:
         """
-        Subtract points from the participant's total.
+        Subtract pack credits (used for purchasing packs).
+
+        Note: This does NOT affect total_points, which never decrease.
 
         Args:
-            amount: Points to subtract (positive integer)
+            amount: Credits to subtract (positive integer)
 
         Raises:
-            ValueError: If amount is negative or would result in negative total
+            ValueError: If amount is negative or insufficient credits
         """
         if amount < 0:
-            raise ValueError("Cannot subtract negative points. Use add_points() instead.")
-        if self.total_points - amount < 0:
-            raise ValueError("Insufficient points. Cannot have negative total points.")
-        self.total_points -= amount
+            raise ValueError("Cannot subtract negative credits.")
+        if self.pack_credits < amount:
+            raise ValueError(f"Insufficient credits. Need {amount}, have {self.pack_credits}")
+        self.pack_credits -= amount
 
     def add_pack(self, pack_tier: str) -> None:
         """

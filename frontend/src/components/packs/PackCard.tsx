@@ -11,14 +11,14 @@ interface PackCardProps {
   tier: PackTier;
   count: number;
   canOpen: boolean;
-  userPoints: number;
+  userCredits: number;
   onOpen: () => void;
   onPurchase: () => void;
 }
 
-export const PackCard: React.FC<PackCardProps> = ({ tier, count, canOpen, userPoints, onOpen, onPurchase }) => {
+export const PackCard: React.FC<PackCardProps> = ({ tier, count, canOpen, userCredits, onOpen, onPurchase }) => {
   const config = PACK_CONFIG[tier];
-  const canPurchase = userPoints >= config.cost;
+  const canPurchase = userCredits >= config.cost;
 
   return (
     <motion.div
@@ -71,7 +71,7 @@ export const PackCard: React.FC<PackCardProps> = ({ tier, count, canOpen, userPo
 
           {/* Cost/Action */}
           <div className="text-text-tertiary text-xs sm:text-sm mb-3 sm:mb-4">
-            <span className="font-semibold">{config.cost} pts</span>
+            <span className="font-semibold">{config.cost} crédits</span>
           </div>
 
           {/* Buttons */}
@@ -82,19 +82,19 @@ export const PackCard: React.FC<PackCardProps> = ({ tier, count, canOpen, userPo
               </button>
             ) : canPurchase ? (
               <button className="btn-secondary w-full" onClick={(e) => { e.stopPropagation(); onPurchase(); }}>
-                ACHETER ({config.cost} pts)
+                ACHETER ({config.cost} crédits)
               </button>
             ) : (
               <button
                 className="btn-secondary w-full opacity-40 cursor-not-allowed"
                 disabled
               >
-                ACHETER ({config.cost} pts)
+                ACHETER ({config.cost} crédits)
               </button>
             )}
             {canPurchase && !canOpen && (
               <div className="text-xs text-fifa-green">
-                ✓ {userPoints} pts disponibles
+                ✓ {userCredits} crédits disponibles
               </div>
             )}
           </div>

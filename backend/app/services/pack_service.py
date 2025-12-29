@@ -330,9 +330,10 @@ def _get_animation_effects(rarity: str) -> list[str]:
 
 def purchase_pack(db: Session, participant_id: int, tier: str) -> None:
     """
-    Purchase a pack using points.
+    Purchase a pack using pack credits.
 
-    Deducts points from participant and adds pack to inventory.
+    Deducts credits from participant and adds pack to inventory.
+    Note: This does NOT affect total_points, which never decrease.
 
     Args:
         db: Database session
@@ -340,11 +341,11 @@ def purchase_pack(db: Session, participant_id: int, tier: str) -> None:
         tier: Pack tier to purchase (bronze/silver/gold/ultimate)
 
     Raises:
-        ValueError: If participant not found, invalid tier, or insufficient points
+        ValueError: If participant not found, invalid tier, or insufficient credits
 
     Example:
         >>> purchase_pack(db, 1, "bronze")
-        >>> # Deducts 100 points and adds 1 bronze pack
+        >>> # Deducts 100 credits and adds 1 bronze pack
     """
     participant = db.query(Participant).filter(Participant.id == participant_id).first()
 
@@ -356,19 +357,19 @@ def purchase_pack(db: Session, participant_id: int, tier: str) -> None:
 
     cost = PACK_COSTS[tier]
 
-    # Check if participant has enough points
-    if participant.total_points < cost:
-        raise ValueError(f"Insufficient points. Need {cost} points, have {participant.total_points}")
+    # Check if participant has enough credits
+    if participant.pack_credits < cost:
+        raise ValueError(f"Insufficient credits. Need {cost} credits, have {participant.pack_credits}")
 
-    # Deduct points
-    participant.subtract_points(cost)
+    # Deduct credits (NOT points - points never decrease)
+    participant.subtract_credits(cost)
 
     # Add pack to inventory
     participant.add_pack(tier)
 
     db.commit()
 
-    logger.info(f"Participant {participant_id} purchased {tier} pack for {cost} points")
+    logger.info(f"Participant {participant_id} purchased {tier} pack for {cost} credits")
 
 
 def add_free_pack(db: Session, participant_id: int, tier: str, count: int = 1) -> None:

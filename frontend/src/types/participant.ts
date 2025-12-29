@@ -10,6 +10,7 @@ export interface Participant {
   avatar_url: string | null;
   is_groom: boolean;
   total_points: number;
+  pack_credits: number;
   current_packs: PackInventory;
   created_at: string;
   updated_at: string;
@@ -28,6 +29,7 @@ export interface ParticipantSummary {
   avatar_url: string | null;
   is_groom: boolean;
   total_points: number;
+  pack_credits: number;
 }
 
 export interface ParticipantWithRank extends ParticipantSummary {

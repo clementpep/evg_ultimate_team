@@ -104,7 +104,8 @@ class ParticipantResponse(ParticipantBase):
     Used in GET requests and as part of other responses.
     """
     id: int = Field(..., description="Unique participant ID")
-    total_points: int = Field(..., description="Current total points")
+    total_points: int = Field(..., description="Current total points (never decreases)")
+    pack_credits: int = Field(..., description="Credits available for purchasing packs")
     current_packs: dict = Field(
         ...,
         description="Pack counts for each tier (bronze, silver, gold, ultimate)"
@@ -122,6 +123,7 @@ class ParticipantResponse(ParticipantBase):
                 "avatar_url": "https://example.com/avatars/paul.jpg",
                 "is_groom": True,
                 "total_points": 350,
+                "pack_credits": 150,
                 "current_packs": {
                     "bronze": 2,
                     "silver": 1,
@@ -145,6 +147,7 @@ class ParticipantSummary(BaseModel):
     avatar_url: Optional[str] = None
     is_groom: bool
     total_points: int
+    pack_credits: int
 
     class Config:
         """Pydantic configuration."""
@@ -155,7 +158,8 @@ class ParticipantSummary(BaseModel):
                 "name": "Paul C.",
                 "avatar_url": "https://example.com/avatars/paul.jpg",
                 "is_groom": True,
-                "total_points": 350
+                "total_points": 350,
+                "pack_credits": 150
             }
         }
 
@@ -182,6 +186,7 @@ class ParticipantWithRank(ParticipantSummary):
                 "avatar_url": "https://example.com/avatars/paul.jpg",
                 "is_groom": True,
                 "total_points": 350,
+                "pack_credits": 150,
                 "rank": 1,
                 "points_today": 75
             }

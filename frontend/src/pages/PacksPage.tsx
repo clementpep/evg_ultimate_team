@@ -19,20 +19,22 @@ export const PacksPage = () => {
   const [selectedTier, setSelectedTier] = useState<PackTier | null>(null);
   const [openResult, setOpenResult] = useState<PackOpenResult | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [userCredits, setUserCredits] = useState<number>(0);
   const [userPoints, setUserPoints] = useState<number>(0);
   const hasShownWelcome = useRef(false);
 
-  // Fetch user points
+  // Fetch user credits and points
   useEffect(() => {
-    const fetchPoints = async () => {
+    const fetchProfile = async () => {
       try {
         const profile = await getMyProfile();
+        setUserCredits(profile.pack_credits);
         setUserPoints(profile.total_points);
       } catch (err) {
-        console.error('Failed to fetch user points:', err);
+        console.error('Failed to fetch user profile:', err);
       }
     };
-    fetchPoints();
+    fetchProfile();
   }, [inventory]); // Refresh when inventory changes
 
   // Show welcome pack notification on first load if user has exactly 1 silver pack
@@ -87,6 +89,25 @@ export const PacksPage = () => {
         <p className="text-text-secondary text-lg">
           Ouvre tes packs pour obtenir des récompenses exclusives !
         </p>
+        {/* Display Credits and Points */}
+        <div className="mt-6 flex justify-center gap-6">
+          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border" style={{
+            background: 'rgba(26, 41, 66, 0.75)',
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+          }}>
+            <span className="text-text-secondary text-sm uppercase tracking-wide">Crédits:</span>
+            <span className="font-numbers text-2xl font-bold text-fifa-gold">{userCredits}</span>
+          </div>
+          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border" style={{
+            background: 'rgba(26, 41, 66, 0.75)',
+            borderColor: 'rgba(255, 255, 255, 0.1)',
+            backdropFilter: 'blur(10px)',
+          }}>
+            <span className="text-text-secondary text-sm uppercase tracking-wide">Points:</span>
+            <span className="font-numbers text-2xl font-bold text-fifa-green">{userPoints}</span>
+          </div>
+        </div>
       </div>
 
       {/* Error Display */}
@@ -156,7 +177,7 @@ export const PacksPage = () => {
           tier="bronze"
           count={inventory?.bronze || 0}
           canOpen={(inventory?.bronze || 0) > 0 && !isOpening}
-          userPoints={userPoints}
+          userCredits={userCredits}
           onOpen={() => handleOpenPack('bronze')}
           onPurchase={() => handlePurchasePack('bronze')}
         />
@@ -164,7 +185,7 @@ export const PacksPage = () => {
           tier="silver"
           count={inventory?.silver || 0}
           canOpen={(inventory?.silver || 0) > 0 && !isOpening}
-          userPoints={userPoints}
+          userCredits={userCredits}
           onOpen={() => handleOpenPack('silver')}
           onPurchase={() => handlePurchasePack('silver')}
         />
@@ -172,7 +193,7 @@ export const PacksPage = () => {
           tier="gold"
           count={inventory?.gold || 0}
           canOpen={(inventory?.gold || 0) > 0 && !isOpening}
-          userPoints={userPoints}
+          userCredits={userCredits}
           onOpen={() => handleOpenPack('gold')}
           onPurchase={() => handlePurchasePack('gold')}
         />
@@ -180,7 +201,7 @@ export const PacksPage = () => {
           tier="ultimate"
           count={inventory?.ultimate || 0}
           canOpen={(inventory?.ultimate || 0) > 0 && !isOpening}
-          userPoints={userPoints}
+          userCredits={userCredits}
           onOpen={() => handleOpenPack('ultimate')}
           onPurchase={() => handlePurchasePack('ultimate')}
         />
@@ -200,7 +221,8 @@ export const PacksPage = () => {
           </h3>
           <ul className="text-text-secondary text-left space-y-2">
             <li>🎁 <strong>Packs gratuits :</strong> 2x par jour (9h et 18h)</li>
-            <li>⭐ <strong>Acheter avec des points :</strong> Bronze (100), Silver (200), Gold (300), Ultimate (500)</li>
+            <li>⭐ <strong>Acheter avec des crédits :</strong> Bronze (100), Silver (200), Gold (300), Ultimate (500)</li>
+            <li>💰 <strong>Crédits :</strong> Gagne 1 crédit par point marqué. Les points restent, les crédits s'utilisent !</li>
             <li>🏆 <strong>Récompenses :</strong> Shots, immunités, pouvoirs spéciaux et plus !</li>
           </ul>
         </div>

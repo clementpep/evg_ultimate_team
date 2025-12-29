@@ -47,6 +47,7 @@ def get_leaderboard(db: Session, include_today_points: bool = False) -> List[Par
             avatar_url=participant.avatar_url,
             is_groom=participant.is_groom,
             total_points=participant.total_points,
+            pack_credits=participant.pack_credits,
             rank=rank,
             points_today=points_today
         )
@@ -153,6 +154,7 @@ def get_daily_leader(db: Session) -> ParticipantWithRank:
         avatar_url=participant.avatar_url,
         is_groom=participant.is_groom,
         total_points=participant.total_points,
+        pack_credits=participant.pack_credits,
         rank=get_participant_rank(db, participant.id),
         points_today=leader_data["points_today"]
     )
