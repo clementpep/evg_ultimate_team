@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { GiCrown } from 'react-icons/gi';
 import { IoLogOut, IoSparkles } from 'react-icons/io5';
 import { useClickOutside } from '@hooks/useClickOutside';
+import { getDefaultAvatarUrl } from '@utils/avatarUtils';
 
 interface ProfileDropdownProps {
   username: string;
@@ -84,7 +85,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
               transform: 'scale(1.8)',
             }}
             onError={(e) => {
-              e.currentTarget.src = '/fut_card_default.png';
+              e.currentTarget.src = getDefaultAvatarUrl();
             }}
           />
         </div>

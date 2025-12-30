@@ -17,6 +17,8 @@ COPY frontend/package*.json ./
 RUN npm ci
 
 # Copy frontend source code
+# Note: Hugging Face Spaces automatically pulls Git LFS files before Docker build,
+# so FUT card PNG images (stored in LFS) will be available in frontend/public/
 COPY frontend/ ./
 
 # Build frontend for production

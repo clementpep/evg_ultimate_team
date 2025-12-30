@@ -19,7 +19,8 @@ from app.routes import (
     challenges_router,
     points_router,
     leaderboard_router,
-    packs_router
+    packs_router,
+    admin_router
 )
 from app.websocket.leaderboard import leaderboard_websocket_endpoint
 from app.tasks import start_scheduler, shutdown_scheduler
@@ -160,6 +161,7 @@ app.include_router(challenges_router, prefix="/api")
 app.include_router(points_router, prefix="/api")
 app.include_router(leaderboard_router, prefix="/api")
 app.include_router(packs_router, prefix="/api")
+app.include_router(admin_router, prefix="/api")
 
 
 # =============================================================================

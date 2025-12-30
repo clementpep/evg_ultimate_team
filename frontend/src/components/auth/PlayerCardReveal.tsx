@@ -12,6 +12,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { getDefaultAvatarUrl } from '@utils/avatarUtils';
 
 interface PlayerCardRevealProps {
   isOpen: boolean;
@@ -38,13 +39,14 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
     if (!isOpen || !avatarUrl) return;
 
     const img = new Image();
-    img.src = avatarUrl;
+    // IMPORTANT: Set handlers BEFORE src to avoid race conditions with cached images
     img.onload = () => setImageLoaded(true);
     img.onerror = () => {
-      console.error('Failed to load avatar image');
+      console.error('Failed to load avatar image:', avatarUrl);
       // Still show animation with fallback
       setImageLoaded(true);
     };
+    img.src = avatarUrl;
   }, [isOpen, avatarUrl]);
 
   // Phase timing management
@@ -290,7 +292,7 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
         }}
         {...(getCardVariants() as any)}
         onError={(e) => {
-          e.currentTarget.src = '/fut_card_default.png';
+          e.currentTarget.src = getDefaultAvatarUrl();
         }}
       />
 

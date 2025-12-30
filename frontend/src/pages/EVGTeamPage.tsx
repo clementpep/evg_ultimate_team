@@ -10,7 +10,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getLeaderboard } from '@services/leaderboardService';
-import { getAvatarUrl } from '@utils/avatarUtils';
+import { getAvatarUrl, getDefaultAvatarUrl } from '@utils/avatarUtils';
 import { ParticipantWithRank } from '@/types/participant';
 
 export const EVGTeamPage: React.FC = () => {
@@ -124,7 +124,7 @@ export const EVGTeamPage: React.FC = () => {
                 filter: 'drop-shadow(0 0 30px rgba(212, 175, 55, 0.8)) drop-shadow(0 0 15px rgba(255, 215, 0, 0.6))',
               }}
               onError={(e) => {
-                e.currentTarget.src = '/fut_card_default.png';
+                e.currentTarget.src = getDefaultAvatarUrl();
               }}
             />
             {/* Points Badge */}

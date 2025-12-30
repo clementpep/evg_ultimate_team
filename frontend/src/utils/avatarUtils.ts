@@ -31,7 +31,8 @@ export const getAvatarUrl = (username: string): string => {
 /**
  * Get default/fallback avatar URL
  * Used when user-specific card doesn't exist
+ * Uses Paul C.'s card (the groom) as fallback
  */
 export const getDefaultAvatarUrl = (): string => {
-  return '/fut_card_default.png';
+  return '/fut_card_paulc.png';
 };

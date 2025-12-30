@@ -8,9 +8,10 @@ import { useChallenges } from '@hooks/useChallenges';
 import { validateChallenge } from '@services/challengeService';
 import { addPoints } from '@services/pointsService';
 import { getAllParticipants } from '@services/participantService';
+import { resetDatabase } from '@services/adminService';
 import { ChallengeStatus } from '@/types/index';
 import { GiCrown, GiCoins } from 'react-icons/gi';
-import { IoMdAdd } from 'react-icons/io';
+import { IoMdAdd, IoMdWarning, IoMdTrash } from 'react-icons/io';
 
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -20,6 +21,8 @@ export const AdminDashboard: React.FC = () => {
   const [selectedParticipant, setSelectedParticipant] = useState('');
   const [pointsAmount, setPointsAmount] = useState('');
   const [pointsReason, setPointsReason] = useState('');
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [resetConfirmText, setResetConfirmText] = useState('');
 
   useEffect(() => {
     getAllParticipants().then(setParticipants);
@@ -66,6 +69,25 @@ export const AdminDashboard: React.FC = () => {
       getAllParticipants().then(setParticipants);
     } catch (err) {
       showToast('Erreur lors de l\'ajout de points', 'error');
+    }
+  };
+
+  const handleResetDatabase = async () => {
+    if (resetConfirmText !== 'RESET') {
+      showToast('Vous devez taper "RESET" pour confirmer', 'error');
+      return;
+    }
+
+    try {
+      const result = await resetDatabase();
+      showToast(result.message, 'success');
+      setShowResetConfirm(false);
+      setResetConfirmText('');
+      // Refresh all data
+      getAllParticipants().then(setParticipants);
+      refetchChallenges();
+    } catch (err: any) {
+      showToast(err.response?.data?.detail || 'Erreur lors du reset', 'error');
     }
   };
 
@@ -282,6 +304,76 @@ export const AdminDashboard: React.FC = () => {
             ))}
           </div>
         )}
+      </Card>
+
+      {/* DANGER ZONE - Database Reset */}
+      <Card>
+        <div className="border-2 border-psg-red rounded-lg p-6" style={{
+          background: 'rgba(218, 41, 28, 0.1)',
+        }}>
+          <div className="flex items-center gap-3 mb-4">
+            <IoMdWarning className="text-psg-red text-3xl" />
+            <h2 className="font-display text-2xl font-bold uppercase tracking-wide text-psg-red">DANGER ZONE</h2>
+          </div>
+
+          <p className="text-text-secondary mb-4">
+            ⚠️ Cette action supprimera <strong>TOUTES</strong> les données de la base de données :
+          </p>
+          <ul className="list-disc list-inside text-text-secondary text-sm mb-6 space-y-1">
+            <li>Tous les points des participants</li>
+            <li>Toutes les validations de challenges</li>
+            <li>Tout l'historique d'ouverture de packs</li>
+            <li>Toutes les transactions de points</li>
+          </ul>
+
+          {!showResetConfirm ? (
+            <Button
+              variant="danger"
+              className="flex items-center gap-2"
+              onClick={() => setShowResetConfirm(true)}
+            >
+              <IoMdTrash className="text-xl" /> Réinitialiser la Base de Données
+            </Button>
+          ) : (
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg border-2 border-psg-red" style={{
+                background: 'rgba(218, 41, 28, 0.2)',
+              }}>
+                <p className="text-white font-bold mb-3">
+                  ⚠️ CONFIRMATION REQUISE
+                </p>
+                <p className="text-text-secondary text-sm mb-4">
+                  Cette action est <strong>IRRÉVERSIBLE</strong>. Pour confirmer, tapez <code className="bg-black/50 px-2 py-1 rounded text-psg-red font-mono">RESET</code> ci-dessous :
+                </p>
+                <Input
+                  value={resetConfirmText}
+                  onChange={(e) => setResetConfirmText(e.target.value)}
+                  placeholder="Tapez RESET pour confirmer"
+                  className="mb-4"
+                />
+                <div className="flex gap-3">
+                  <Button
+                    variant="danger"
+                    className="flex items-center gap-2"
+                    onClick={handleResetDatabase}
+                    disabled={resetConfirmText !== 'RESET'}
+                  >
+                    <IoMdTrash className="text-xl" /> Confirmer le Reset
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => {
+                      setShowResetConfirm(false);
+                      setResetConfirmText('');
+                    }}
+                  >
+                    Annuler
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </Card>
     </div>
   );
