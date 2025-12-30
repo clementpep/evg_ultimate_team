@@ -9,6 +9,8 @@ import { validateChallenge } from '@services/challengeService';
 import { addPoints } from '@services/pointsService';
 import { getAllParticipants } from '@services/participantService';
 import { ChallengeStatus } from '@types/index';
+import { GiCrown, GiCoins } from 'react-icons/gi';
+import { IoMdAdd } from 'react-icons/io';
 
 export const AdminDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -76,7 +78,7 @@ export const AdminDashboard: React.FC = () => {
       {/* Header */}
       <div className="text-center">
         <h1 className="font-display text-5xl font-black uppercase tracking-wider mb-2 text-gradient-psg">
-          TABLEAU DE BORD ADMIN
+          ADMIN DASHBOARD
         </h1>
         <p className="text-text-secondary">Pilotage du jeu EVG Ultimate Team</p>
       </div>
@@ -125,8 +127,8 @@ export const AdminDashboard: React.FC = () => {
         {/* Points & Credits Management */}
         <Card>
           <h2 className="font-display text-2xl font-bold mb-4 uppercase tracking-wide">Gérer Points & Crédits</h2>
-          <p className="text-text-tertiary text-sm mb-4">
-            💰 Ajouter des points = Ajouter des points ET des crédits (ratio 1:1)
+          <p className="text-text-tertiary text-sm mb-4 flex items-center gap-2">
+            <GiCoins className="text-fifa-gold text-lg" /> Ajouter des points = Ajouter des points ET des crédits (ratio 1:1)
           </p>
           <div className="space-y-4">
             <div>
@@ -163,11 +165,11 @@ export const AdminDashboard: React.FC = () => {
             </div>
             <Button
               variant="success"
-              className="w-full"
+              className="w-full flex items-center justify-center gap-2"
               onClick={handlePointsSubmit}
               disabled={!selectedParticipant || !pointsAmount || !pointsReason}
             >
-              ➕ Ajouter {pointsAmount || '0'} Points + {pointsAmount || '0'} Crédits
+              <IoMdAdd className="text-xl" /> Ajouter {pointsAmount || '0'} Points + {pointsAmount || '0'} Crédits
             </Button>
           </div>
         </Card>
@@ -194,7 +196,9 @@ export const AdminDashboard: React.FC = () => {
                   </div>
                 </div>
                 {p.is_groom && (
-                  <span className="text-fifa-gold text-xs font-bold">👑 GROOM</span>
+                  <span className="text-fifa-gold text-xs font-bold flex items-center gap-1">
+                    <GiCrown /> GROOM
+                  </span>
                 )}
               </div>
             ))}

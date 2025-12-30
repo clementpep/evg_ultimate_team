@@ -4,6 +4,7 @@ import { Loader } from '@components/common/Loader';
 import { useWebSocket } from '@hooks/useWebSocket';
 import { ParticipantWithRank } from '@types/index';
 import { formatRank } from '@utils/formatters';
+import { GiTrophyCup } from 'react-icons/gi';
 import clsx from 'clsx';
 
 export const LeaderboardPage: React.FC = () => {
@@ -24,7 +25,12 @@ export const LeaderboardPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-4xl font-display font-bold uppercase tracking-wide text-gradient-psg">Classement Live</h1>
+        <div className="flex items-center gap-3">
+          <GiTrophyCup className="text-5xl text-fifa-gold" />
+          <h1 className="text-4xl font-display font-bold uppercase tracking-wide text-gradient-psg">
+            Classement Live
+          </h1>
+        </div>
         <div className="flex items-center gap-2">
           <div className={clsx('w-3 h-3 rounded-full', isConnected ? 'bg-fifa-green' : 'bg-gray-500')} />
           <span className="text-sm text-text-secondary font-semibold uppercase tracking-wide">

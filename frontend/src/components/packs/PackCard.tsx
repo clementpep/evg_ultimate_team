@@ -6,6 +6,7 @@
 
 import { motion } from 'framer-motion';
 import { PACK_CONFIG, PackTier } from '../../types/pack';
+import { IoMdCheckmarkCircle } from 'react-icons/io';
 
 interface PackCardProps {
   tier: PackTier;
@@ -93,8 +94,8 @@ export const PackCard: React.FC<PackCardProps> = ({ tier, count, canOpen, userCr
               </button>
             )}
             {canPurchase && !canOpen && (
-              <div className="text-xs text-fifa-green">
-                ✓ {userCredits} crédits disponibles
+              <div className="text-xs text-fifa-green flex items-center justify-center gap-1">
+                <IoMdCheckmarkCircle /> {userCredits} crédits disponibles
               </div>
             )}
           </div>

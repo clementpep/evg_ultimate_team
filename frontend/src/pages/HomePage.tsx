@@ -9,6 +9,9 @@ import { packService } from '@services/packService';
 import { Participant, ParticipantWithRank } from '@types/index';
 import { PackOpening } from '@types/pack';
 import { formatRank } from '@utils/formatters';
+import { GiCrown, GiTrophyCup } from 'react-icons/gi';
+import { IoSettingsSharp } from 'react-icons/io5';
+import { FaGift, FaBullseye, FaStar } from 'react-icons/fa';
 
 export const HomePage: React.FC = () => {
   const { user } = useAuth();
@@ -17,6 +20,16 @@ export const HomePage: React.FC = () => {
   const [dailyLeader, setDailyLeader] = useState<ParticipantWithRank | null>(null);
   const [packHistory, setPackHistory] = useState<PackOpening[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const getPackTierStyle = (tier: string) => {
+    const styles: Record<string, string> = {
+      bronze: 'bg-[#CD7F32]/20 text-[#CD7F32] border border-[#CD7F32]/40',
+      silver: 'bg-[#C0C0C0]/20 text-[#C0C0C0] border border-[#C0C0C0]/40',
+      gold: 'bg-fifa-gold/20 text-fifa-gold border border-fifa-gold/40',
+      ultimate: 'bg-psg-red/20 text-psg-red border border-psg-red/40',
+    };
+    return styles[tier.toLowerCase()] || styles.bronze;
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -50,7 +63,9 @@ export const HomePage: React.FC = () => {
           Welcome, {user?.username}!
         </h1>
         {user?.is_groom && (
-          <p className="text-fifa-gold text-xl">👑 The Groom 👑</p>
+          <p className="text-fifa-gold text-xl flex items-center justify-center gap-2">
+            <GiCrown className="text-2xl" /> The Groom <GiCrown className="text-2xl" />
+          </p>
         )}
       </div>
 
@@ -72,46 +87,11 @@ export const HomePage: React.FC = () => {
         </div>
       )}
 
-      {/* Mes Avantages Section */}
-      {packHistory.length > 0 && (
-        <Card>
-          <h2 className="text-2xl font-heading mb-4">🎁 Mes Avantages Obtenus</h2>
-          <div className="space-y-3 max-h-80 overflow-y-auto">
-            {packHistory.map((opening) => (
-              <div
-                key={opening.id}
-                className="flex items-center justify-between p-3 rounded-lg border border-white/5 hover:border-white/10 transition-colors"
-                style={{ background: 'rgba(0, 0, 0, 0.2)' }}
-              >
-                <div className="flex-1">
-                  <h3 className="font-semibold text-white">{opening.reward_name}</h3>
-                  {opening.reward_description && (
-                    <p className="text-sm text-text-tertiary mt-1">{opening.reward_description}</p>
-                  )}
-                  <p className="text-xs text-text-tertiary mt-1">
-                    Obtenu le {new Date(opening.opened_at).toLocaleDateString('fr-FR')}
-                  </p>
-                </div>
-                <div className="text-right ml-4">
-                  <span className="text-xs px-2 py-1 rounded font-semibold uppercase bg-fifa-gold/20 text-fifa-gold">
-                    {opening.pack_tier}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <Link
-            to="/packs"
-            className="text-psg-red hover:text-white font-semibold mt-4 block text-center transition-colors uppercase tracking-wide"
-          >
-            Ouvrir plus de packs →
-          </Link>
-        </Card>
-      )}
-
       <div className="grid md:grid-cols-2 gap-6">
         <Card>
-          <h2 className="text-2xl font-heading mb-4">🏆 Podium</h2>
+          <h2 className="text-2xl font-heading mb-4 flex items-center gap-2">
+            <GiTrophyCup className="text-fifa-gold" /> Podium
+          </h2>
           <div className="space-y-3">
             {podium.map((p) => (
               <div key={p.id} className="flex items-center justify-between">
@@ -135,7 +115,9 @@ export const HomePage: React.FC = () => {
 
         {dailyLeader && (
           <Card>
-            <h2 className="text-2xl font-heading mb-4">⭐ Today's Leader</h2>
+            <h2 className="text-2xl font-heading mb-4 flex items-center gap-2">
+              <FaStar className="text-fifa-gold" /> Today's Leader
+            </h2>
             <div className="text-center">
               <p className="text-3xl font-heading text-fifa-green mb-2">{dailyLeader.name}</p>
               <p className="text-gray-400">
@@ -147,28 +129,44 @@ export const HomePage: React.FC = () => {
         )}
       </div>
 
-      <div className="grid md:grid-cols-3 gap-4">
-        <Link to="/challenges">
-          <Card className="text-center hover:border-psg-blue">
-            <div className="text-4xl mb-2">🎯</div>
-            <h3 className="text-xl font-heading">Challenges</h3>
-          </Card>
-        </Link>
-        <Link to="/leaderboard">
-          <Card className="text-center hover:border-fifa-gold">
-            <div className="text-4xl mb-2">🏆</div>
-            <h3 className="text-xl font-heading">Leaderboard</h3>
-          </Card>
-        </Link>
-        {user?.is_admin && (
-          <Link to="/admin">
-            <Card className="text-center hover:border-psg-red">
-              <div className="text-4xl mb-2">⚙️</div>
-              <h3 className="text-xl font-heading">Admin</h3>
-            </Card>
+      {/* Mes Avantages Section */}
+      {packHistory.length > 0 && (
+        <Card>
+          <h2 className="text-2xl font-heading mb-4 flex items-center gap-2">
+            <FaGift className="text-psg-red" /> Mes Avantages Obtenus
+          </h2>
+          <div className="space-y-3 max-h-80 overflow-y-auto">
+            {packHistory.map((opening) => (
+              <div
+                key={opening.id}
+                className="flex items-center justify-between p-3 rounded-lg border border-white/5 hover:border-white/10 transition-colors"
+                style={{ background: 'rgba(0, 0, 0, 0.2)' }}
+              >
+                <div className="flex-1">
+                  <h3 className="font-semibold text-white">{opening.reward_name}</h3>
+                  {opening.reward_description && (
+                    <p className="text-sm text-text-tertiary mt-1">{opening.reward_description}</p>
+                  )}
+                  <p className="text-xs text-text-tertiary mt-1">
+                    Obtenu le {new Date(opening.opened_at).toLocaleDateString('fr-FR')}
+                  </p>
+                </div>
+                <div className="text-right ml-4">
+                  <span className={`text-xs px-2 py-1 rounded font-semibold uppercase ${getPackTierStyle(opening.pack_tier)}`}>
+                    {opening.pack_tier}
+                  </span>
+                </div>
+              </div>
+            ))}
+          </div>
+          <Link
+            to="/packs"
+            className="text-psg-red hover:text-white font-semibold mt-4 block text-center transition-colors uppercase tracking-wide"
+          >
+            Ouvrir plus de packs →
           </Link>
-        )}
-      </div>
+        </Card>
+      )}
     </div>
   );
 };
