@@ -9,6 +9,7 @@ import { LeaderboardPage } from '@pages/LeaderboardPage';
 import { ChallengesPage } from '@pages/ChallengesPage';
 import { PacksPage } from '@pages/PacksPage';
 import { AdminDashboard } from '@pages/AdminDashboard';
+import { EVGTeamPage } from '@pages/EVGTeamPage';
 import { ProfileDropdown } from '@components/layout/ProfileDropdown';
 import { PlayerCardReveal } from '@components/auth/PlayerCardReveal';
 import { getAvatarUrl } from '@utils/avatarUtils';
@@ -92,6 +93,27 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [totalPoints, setTotalPoints] = useState<number>(0);
   const [userRank, setUserRank] = useState<number>(0);
 
+  const NavItem: React.FC<{ to: string; children: React.ReactNode }> = ({
+    to,
+    children,
+  }) => (
+    <Link
+      to={to}
+      className="
+        text-white/90 font-semibold
+        text-xs sm:text-sm
+        uppercase tracking-wide
+        px-3 py-1.5
+        rounded-full
+        transition-all
+        hover:bg-fifa-gold/20 hover:text-white
+        focus:outline-none focus:ring-2 focus:ring-fifa-gold
+      "
+    >
+      {children}
+    </Link>
+  );
+
   // Fetch participant data and rank for non-admin users
   useEffect(() => {
     if (!user || user.is_admin) return;
@@ -131,48 +153,21 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           borderColor: 'rgba(255, 255, 255, 0.05)',
         }}
       >
-        <div className="container mx-auto px-4 sm:px-8">
-          <div className="flex flex-col sm:flex-row items-center justify-between py-3 sm:h-20">
-            <Link to="/" className="text-xl sm:text-3xl font-display font-black uppercase tracking-wider mb-2 sm:mb-0 text-gradient-psg">
-              EVG ULTIMATE TEAM
-            </Link>
+        <div className="container mx-auto relative">
+          <div className="px-4 sm:px-8">
+            {/* Top row : Logo + Profile */}
+            <div className="flex items-center justify-between py-2 sm:py-3">
+              <Link
+                to="/"
+                className="text-lg sm:text-3xl font-display font-black uppercase tracking-wider text-gradient-psg flex-shrink-0"
+              >
+                EVG ULTIMATE TEAM
+              </Link>
 
-            <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2">
-              {!user?.is_admin && (
-                <>
-                  <Link
-                    to="/"
-                    className="text-white font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 rounded-md transition-all hover:bg-fifa-gold/20 focus:outline-none focus:ring-2 focus:ring-fifa-gold focus:ring-offset-2 focus:ring-offset-bg-primary"
-                  >
-                    Accueil
-                  </Link>
-                  <Link
-                    to="/leaderboard"
-                    className="text-white font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 rounded-md transition-all hover:bg-fifa-gold/20 focus:outline-none focus:ring-2 focus:ring-fifa-gold focus:ring-offset-2 focus:ring-offset-bg-primary"
-                  >
-                    Classement
-                  </Link>
-                  <Link
-                    to="/challenges"
-                    className="text-white font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 rounded-md transition-all hover:bg-fifa-gold/20 focus:outline-none focus:ring-2 focus:ring-fifa-gold focus:ring-offset-2 focus:ring-offset-bg-primary"
-                  >
-                    Défis
-                  </Link>
-                  <Link
-                    to="/packs"
-                    className="text-white font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 rounded-md transition-all hover:bg-fifa-gold/20 focus:outline-none focus:ring-2 focus:ring-fifa-gold focus:ring-offset-2 focus:ring-offset-bg-primary"
-                  >
-                    Packs
-                  </Link>
-                </>
-              )}
-              <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 ml-2 sm:ml-4 border-l border-white/10">
-                {/* Username caché sur mobile, visible sur desktop */}
+              <div className="flex items-center gap-2 sm:gap-3 sm:pl-4 sm:ml-4 sm:border-l sm:border-white/10">
                 <span className="hidden lg:inline text-sm text-white font-semibold">
                   {user?.username}
                 </span>
-
-                {/* ProfileDropdown remplace le bouton de déconnexion */}
                 <ProfileDropdown
                   username={user?.username || ''}
                   avatarUrl={getAvatarUrl(user?.username || '')}
@@ -185,6 +180,36 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </div>
             </div>
           </div>
+
+          {/* Navigation capsule */}
+          {!user?.is_admin && (
+            <div
+              className="
+                flex justify-center
+                px-4 sm:px-0
+                pb-2 sm:pb-0
+                sm:absolute sm:top-1/2 sm:left-1/2
+                sm:-translate-x-1/2 sm:-translate-y-1/2
+              "
+            >
+              <div
+                className="
+                  flex flex-wrap items-center gap-1
+                  bg-white/5 backdrop-blur
+                  border border-white/10
+                  rounded-full
+                  px-2 py-1
+                  shadow-lg
+                "
+              >
+                <NavItem to="/">Accueil</NavItem>
+                <NavItem to="/team">Team</NavItem>
+                <NavItem to="/leaderboard">Classement</NavItem>
+                <NavItem to="/challenges">Défis</NavItem>
+                <NavItem to="/packs">Packs</NavItem>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 
@@ -245,6 +270,16 @@ const AppContent: React.FC = () => {
           <ProtectedRoute>
             <Layout>
               <PacksPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/team"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <EVGTeamPage />
             </Layout>
           </ProtectedRoute>
         }

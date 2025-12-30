@@ -80,7 +80,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
             alt={username}
             className="w-full h-full object-cover"
             style={{
-              objectPosition: 'center 30%',
+              objectPosition: 'center 10%',
               transform: 'scale(1.8)',
             }}
             onError={(e) => {
@@ -113,7 +113,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
                       src={avatarUrl}
                       className="w-full h-full object-cover"
                       style={{
-                        objectPosition: 'center 30%',
+                        objectPosition: 'center 10%',
                         transform: 'scale(1.8)',
                       }}
                       alt={username}

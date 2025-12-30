@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\"",
-    "reset-first-login": "node -e \"require('child_process').exec((process.platform === 'win32' ? 'start' : process.platform === 'darwin' ? 'open' : 'xdg-open') + ' http://localhost:5173/?resetFirstLogin=true')\""
+    "reset-first-login": "start http://localhost:5173/?resetFirstLogin=true"
   },
   "dependencies": {
     "@tsparticles/react": "^3.0.0",

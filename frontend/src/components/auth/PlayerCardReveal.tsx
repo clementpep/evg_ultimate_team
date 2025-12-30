@@ -57,8 +57,8 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
 
     // Phase transitions (cumulative timing)
     const timer1 = setTimeout(() => setPhase('spin'), 1500);      // 0-1.5s: Entry
-    const timer2 = setTimeout(() => setPhase('land'), 2700);      // 1.5-2.7s: Spin (1.2s TOUPIE!)
-    const timer3 = setTimeout(() => setPhase('settle'), 3200);    // 2.7-3.2s: Land
+    const timer2 = setTimeout(() => setPhase('land'), 3000);      // 1.5-3.0s: Spin (1.5s TOUPIE!)
+    const timer3 = setTimeout(() => setPhase('settle'), 3500);    // 3.0-3.5s: Land
     // Card stays visible after settle phase - user must click to continue
 
     return () => {
@@ -107,20 +107,21 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
       case 'spin':
         return {
           animate: {
-            rotateY: [0, 360, 720, 1080, 1440, 1800, 2160, 2520, 2880, 3240],  // 9 full rotations - TOUPIE EFFECT!
-            rotateX: [0, 15, -15, 12, -12, 10, -10, 8, -8, 5, -5, 0],
-            scale: [1, 1.05, 1.03, 1.06, 1.02, 1.04, 1.02, 1.03, 1.01, 1.02, 1],
+            rotateY: [0, 720, 1440, 2160, 2880, 3240],  // 9 full rotations - TOUPIE EFFECT!
+            rotateX: [0, 10, -10, 8, -8, 0],  // Simplified wobble
+            scale: [1, 1.04, 1.02, 1.03, 1.01, 1],  // Simplified scale
           },
           transition: {
-            duration: 1.2,  // ULTRA FAST spinning
-            times: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
-            ease: [0.2, 0, 0.2, 1],  // Fast linear-ish easing for toupie effect
+            duration: 1.5,  // Slightly longer for smoother motion
+            ease: 'linear',  // Linear for consistent rotation speed
           },
         };
 
       case 'land':
         return {
           animate: {
+            rotateY: 0,  // Explicitly reset rotation to 0
+            rotateX: 0,  // Explicitly reset rotation to 0
             scale: [1, 0.98, 1.02, 1],
           },
           transition: {
@@ -132,6 +133,8 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
       case 'settle':
         return {
           animate: {
+            rotateY: 0,  // Keep rotation at 0
+            rotateX: 0,  // Keep rotation at 0
             y: [0, -8, 0],
             scale: [1, 1.01, 1],
           },
