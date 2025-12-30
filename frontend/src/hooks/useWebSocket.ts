@@ -6,7 +6,20 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000';
+// Determine WebSocket URL based on environment
+const getWebSocketURL = () => {
+  // If VITE_WS_URL is explicitly set, use it
+  if (import.meta.env.VITE_WS_URL) {
+    return import.meta.env.VITE_WS_URL;
+  }
+
+  // Otherwise, build WebSocket URL from current location
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const host = window.location.host;
+  return `${protocol}//${host}`;
+};
+
+const WS_URL = getWebSocketURL();
 
 interface UseWebSocketOptions {
   onMessage?: (data: any) => void;
