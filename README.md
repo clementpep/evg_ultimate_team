@@ -1,3 +1,13 @@
+---
+title: EVG Ultimate Team
+emoji: 🏆
+colorFrom: blue
+colorTo: red
+sdk: docker
+pinned: true
+license: mit
+---
+
 # 🏆 EVG ULTIMATE TEAM
 
 **Gamification Web Application for Paul's Bachelor Party**

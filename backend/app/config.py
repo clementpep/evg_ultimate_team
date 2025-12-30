@@ -50,7 +50,7 @@ class Settings(BaseSettings):
     # ==========================================================================
     cors_origins: str = Field(
         default="http://localhost:5173,http://localhost:3000",
-        description="Comma-separated list of allowed CORS origins"
+        description="Comma-separated list of allowed CORS origins (use '*' for all)"
     )
 
     @property
@@ -59,9 +59,13 @@ class Settings(BaseSettings):
         Parse CORS origins string into a list.
 
         Returns:
-            List of allowed origin URLs
+            List of allowed origin URLs or ["*"] for all origins
         """
-        return [origin.strip() for origin in self.cors_origins.split(",")]
+        origins = self.cors_origins.strip()
+        # Allow all origins if "*" is specified
+        if origins == "*":
+            return ["*"]
+        return [origin.strip() for origin in origins.split(",")]
 
     # ==========================================================================
     # Logging Configuration
