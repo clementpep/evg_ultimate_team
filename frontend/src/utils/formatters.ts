@@ -42,7 +42,8 @@ export const formatPoints = (points: number): string => {
 export const formatRank = (rank: number): string => {
   const suffixes = ['th', 'st', 'nd', 'rd'];
   const v = rank % 100;
-  return rank + (suffixes[(v - 20) % 10] || suffixes[v] || suffixes[0]);
+  const suffix = suffixes[(v - 20) % 10] ?? suffixes[v] ?? suffixes[0] ?? 'th';
+  return rank + suffix;
 };
 
 /**

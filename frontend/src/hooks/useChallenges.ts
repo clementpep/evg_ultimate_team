@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Challenge } from '@types/challenge';
+import { Challenge } from '@/types/challenge';
 import * as challengeService from '@services/challengeService';
 
 export const useChallenges = () => {

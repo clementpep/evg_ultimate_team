@@ -10,8 +10,8 @@ import {
   ChallengeCreate,
   ChallengeUpdate,
   ChallengeValidation,
-} from '@types/challenge';
-import { APIResponse } from '@types/api';
+} from '@/types/challenge';
+import { APIResponse } from '@/types/api';
 
 /**
  * Get all challenges.

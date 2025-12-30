@@ -2,7 +2,7 @@ import React from 'react';
 import { Card } from '@components/common/Card';
 import { Loader } from '@components/common/Loader';
 import { useChallenges } from '@hooks/useChallenges';
-import { ChallengeStatus, ChallengeType } from '@types/index';
+import { ChallengeStatus, ChallengeType } from '@/types/index';
 import { FaUser, FaUsers } from 'react-icons/fa';
 import { RiSpyFill } from 'react-icons/ri';
 import { FaBolt, FaClipboardList, FaTrophy } from 'react-icons/fa6';

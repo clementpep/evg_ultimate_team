@@ -5,8 +5,8 @@
  */
 
 import apiClient from './api';
-import { Participant, ParticipantCreate, ParticipantUpdate } from '@types/participant';
-import { APIResponse } from '@types/api';
+import { Participant, ParticipantCreate, ParticipantUpdate } from '@/types/participant';
+import { APIResponse } from '@/types/api';
 
 /**
  * Get all participants.

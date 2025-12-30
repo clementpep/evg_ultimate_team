@@ -1,8 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { Card } from '@components/common/Card';
+import React, { useState } from 'react';
 import { Loader } from '@components/common/Loader';
 import { useWebSocket } from '@hooks/useWebSocket';
-import { ParticipantWithRank } from '@types/index';
+import { ParticipantWithRank } from '@/types/index';
 import { formatRank } from '@utils/formatters';
 import { GiTrophyCup } from 'react-icons/gi';
 import clsx from 'clsx';

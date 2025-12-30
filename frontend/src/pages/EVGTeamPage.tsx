@@ -11,7 +11,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getLeaderboard } from '@services/leaderboardService';
 import { getAvatarUrl } from '@utils/avatarUtils';
-import { ParticipantWithRank } from '@types/participant';
+import { ParticipantWithRank } from '@/types/participant';
 
 export const EVGTeamPage: React.FC = () => {
   const [participants, setParticipants] = useState<ParticipantWithRank[]>([]);

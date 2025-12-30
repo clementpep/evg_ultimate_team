@@ -5,7 +5,7 @@
  */
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { CurrentUser } from '@types/auth';
+import { CurrentUser } from '@/types/auth';
 import * as authService from '@services/authService';
 
 interface AuthContextType {

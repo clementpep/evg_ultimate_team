@@ -10,8 +10,8 @@ import {
   PointsHistory,
   PointsAdd,
   PointsSubtract,
-} from '@types/points';
-import { APIResponse } from '@types/api';
+} from '@/types/points';
+import { APIResponse } from '@/types/api';
 
 /**
  * Add points to a participant (admin only).

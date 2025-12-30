@@ -5,8 +5,8 @@
  */
 
 import apiClient from './api';
-import { ParticipantWithRank } from '@types/participant';
-import { APIResponse } from '@types/api';
+import { ParticipantWithRank } from '@/types/participant';
+import { APIResponse } from '@/types/api';
 
 /**
  * Get the full leaderboard.

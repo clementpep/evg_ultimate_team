@@ -6,12 +6,11 @@ import { Loader } from '@components/common/Loader';
 import { getMyProfile } from '@services/participantService';
 import { getTop3, getDailyLeader } from '@services/leaderboardService';
 import { packService } from '@services/packService';
-import { Participant, ParticipantWithRank } from '@types/index';
-import { PackOpening } from '@types/pack';
+import { Participant, ParticipantWithRank } from '@/types/index';
+import { PackOpening } from '@/types/pack';
 import { formatRank } from '@utils/formatters';
 import { GiCrown, GiTrophyCup } from 'react-icons/gi';
-import { IoSettingsSharp } from 'react-icons/io5';
-import { FaGift, FaBullseye, FaStar } from 'react-icons/fa';
+import { FaGift, FaStar } from 'react-icons/fa';
 
 export const HomePage: React.FC = () => {
   const { user } = useAuth();

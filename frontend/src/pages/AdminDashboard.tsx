@@ -8,7 +8,7 @@ import { useChallenges } from '@hooks/useChallenges';
 import { validateChallenge } from '@services/challengeService';
 import { addPoints } from '@services/pointsService';
 import { getAllParticipants } from '@services/participantService';
-import { ChallengeStatus } from '@types/index';
+import { ChallengeStatus } from '@/types/index';
 import { GiCrown, GiCoins } from 'react-icons/gi';
 import { IoMdAdd } from 'react-icons/io';
 

@@ -5,8 +5,8 @@
  */
 
 import apiClient from './api';
-import { LoginRequest, AdminLoginRequest, AuthToken, CurrentUser } from '@types/auth';
-import { APIResponse } from '@types/api';
+import { LoginRequest, AdminLoginRequest, AuthToken, CurrentUser } from '@/types/auth';
+import { APIResponse } from '@/types/api';
 
 /**
  * Login as a participant (username only).
