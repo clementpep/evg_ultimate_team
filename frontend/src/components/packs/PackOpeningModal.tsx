@@ -1,12 +1,14 @@
 /**
- * Pack Opening Modal Component - ULTRA PREMIUM EDITION (DEBUGGED & FIXED)
+ * Pack Opening Modal Component - ULTRA PREMIUM EDITION V2
  *
- * FIFA Ultimate Team-style pack opening with smooth, bug-free animations:
+ * FIFA Ultimate Team-style pack opening with jaw-dropping animations:
  * 1. Anticipation (2.5s) - Glowing pack with intense build-up
- * 2. Reveal (2s) - Epic card reveal with light burst
- * 3. Celebration (3s) - Explosive particles, confetti, fireworks
+ * 2. Entry (0.5s) - Card falls from above with dramatic rotation
+ * 3. Spin (1.5s) - Card spins like a TOUPIE!
+ * 4. Land (0.5s) - SHOCKWAVE impact with screen shake
+ * 5. Celebration (2s) - Card settles with confetti and particles
  *
- * Designed to be ADDICTIVE and make users want to open MORE packs!
+ * Inspired by PlayerCardReveal animation - MAXIMUM IMMERSION!
  */
 
 import { useState, useEffect } from 'react';
@@ -21,13 +23,15 @@ interface PackOpeningModalProps {
   onClose: () => void;
 }
 
+type AnimationPhase = 'anticipation' | 'entry' | 'spin' | 'land' | 'celebration';
+
 export const PackOpeningModal: React.FC<PackOpeningModalProps> = ({
   isOpen,
   tier,
   result,
   onClose,
 }) => {
-  const [phase, setPhase] = useState<'anticipation' | 'reveal' | 'celebration'>('anticipation');
+  const [phase, setPhase] = useState<AnimationPhase>('anticipation');
 
   useEffect(() => {
     if (!isOpen || !result) return;
@@ -35,13 +39,17 @@ export const PackOpeningModal: React.FC<PackOpeningModalProps> = ({
     // Reset state
     setPhase('anticipation');
 
-    // Phase timing
-    const timer1 = setTimeout(() => setPhase('reveal'), 2500);
-    const timer2 = setTimeout(() => setPhase('celebration'), 4500);
+    // Phase timing - Optimized for smoothness
+    const timer1 = setTimeout(() => setPhase('entry'), 2000);      // 0-2.0s: Pack anticipation
+    const timer2 = setTimeout(() => setPhase('spin'), 2500);       // 2.0-2.5s: Card entry
+    const timer3 = setTimeout(() => setPhase('land'), 4000);       // 2.5-4.0s: Card spin (TOUPIE!)
+    const timer4 = setTimeout(() => setPhase('celebration'), 4100); // 4.0-4.1s: Instant anchor (0.1s)
 
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
+      clearTimeout(timer3);
+      clearTimeout(timer4);
     };
   }, [isOpen, result]);
 
@@ -51,102 +59,193 @@ export const PackOpeningModal: React.FC<PackOpeningModalProps> = ({
   const rarityColor = getRarityColor(result.reward.rarity);
   const isLegendary = result.reward.rarity === 'legendary';
 
+  // Get card animation variants based on phase (inspired by PlayerCardReveal)
+  const getCardVariants = () => {
+    switch (phase) {
+      case 'entry':
+        return {
+          initial: {
+            y: -1000,
+            rotateX: 0,  // No X rotation to avoid parasitic rotation
+            rotateY: 540,  // Start already spinning to hide content from the start!
+            scale: 0.8,
+            opacity: 0,
+          },
+          animate: {
+            y: 0,
+            rotateX: 0,
+            rotateY: 720,  // Continue spinning
+            scale: 1,
+            opacity: 1,
+          },
+          transition: {
+            duration: 0.5,
+            ease: [0.25, 0.1, 0.25, 1] as any,
+          },
+        };
+
+      case 'spin':
+        return {
+          animate: {
+            rotateY: 3960,  // Continue from 720 (entry) + 3240 (9 rotations) = 3960 - TOUPIE!
+            rotateX: [0, 8, -8, 6, -6, 4, -4, 2, -2, 0],  // Smoother wobble progression
+            scale: [1, 1.03, 1.01, 1.02, 1.01, 1.015, 1.01, 1.005, 1.005, 1],  // Smoother scale
+          },
+          transition: {
+            duration: 1.4,  // Slightly faster for more energy
+            ease: 'linear',
+          },
+        };
+
+      case 'land':
+        return {
+          animate: {
+            // Card anchors instantly - no bounce, just a hard stop!
+            rotateX: 0,
+            scale: 1,  // No scale animation - instant anchor
+            y: 0,  // No bounce - stays put
+          },
+          transition: {
+            duration: 0.1,  // Ultra fast - just anchors
+            ease: 'easeOut',  // Simple easing for instant stop
+          },
+        };
+
+      case 'celebration':
+        return {
+          animate: {
+            // Keep rotation stable (don't reset)
+            rotateX: 0,
+            // No y or scale animation - card stays perfectly still after landing
+          },
+          transition: {
+            duration: 0.5,
+            ease: [0.45, 0, 0.55, 1],
+          },
+        };
+
+      default:
+        return {
+          animate: {},
+          transition: { duration: 0 },
+        };
+    }
+  };
+
+  // Get shake animation for screen (only during land phase)
+  const getShakeAnimation = () => {
+    if (phase === 'land') {
+      return {
+        x: [0, -4, 3, -2, 1, 0],
+        y: [0, -3, 2, -1, 0],
+      };
+    }
+    return {};
+  };
+
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        className="fixed inset-0 z-[9999] flex items-center justify-center"
+        className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
         style={{
           background: isLegendary
             ? 'radial-gradient(circle at center, #1A2942 0%, #0A1628 100%)'
             : 'linear-gradient(135deg, #0A1628 0%, #152238 100%)',
+          perspective: 2000,
+          perspectiveOrigin: '50% 50%',
+          willChange: phase === 'land' ? 'transform' : 'auto',
         }}
         initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
+        animate={{
+          opacity: 1,
+          ...getShakeAnimation(),
+        }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }}
+        transition={
+          phase === 'land'
+            ? {
+                opacity: { duration: 0.3 },
+                x: { duration: 0.5, times: [0, 0.2, 0.4, 0.6, 0.8, 1], ease: [0.34, 1.56, 0.64, 1] },
+                y: { duration: 0.5, times: [0, 0.2, 0.4, 0.6, 0.8, 1], ease: [0.34, 1.56, 0.64, 1] },
+              }
+            : { duration: 0.3 }
+        }
       >
-        {/* Radial burst effect - Only during reveal and celebration */}
-        {phase !== 'anticipation' && (
+        {/* Radial burst effect - SHOCKWAVE AFTER card lands */}
+        {phase === 'celebration' && (
           <div className="absolute inset-0 overflow-hidden pointer-events-none flex items-center justify-center">
-            {/* Multiple expanding rings */}
             {[...Array(3)].map((_, i) => (
               <motion.div
                 key={`burst-${i}`}
                 className="absolute rounded-full"
                 style={{
-                  border: `2px solid ${rarityColor}`,
-                  boxShadow: `0 0 40px ${rarityColor}80`,
+                  border: `3px solid ${rarityColor}`,
+                  boxShadow: `0 0 50px ${rarityColor}CC, 0 0 25px ${rarityColor}80`,
                 }}
                 initial={{ width: 0, height: 0, opacity: 0 }}
                 animate={{
                   width: ['0px', '800px', '1200px'],
                   height: ['0px', '800px', '1200px'],
-                  opacity: [0, 0.6, 0],
+                  opacity: [0, 0.8, 0],
                 }}
                 transition={{
                   duration: 2,
-                  delay: i * 0.3,
-                  ease: 'easeOut',
+                  delay: i * 0.15,  // Faster succession for impact
+                  ease: [0.25, 0.46, 0.45, 0.94],
                 }}
               />
             ))}
           </div>
         )}
 
-        {/* Epic particle system for celebration */}
+        {/* Golden Confetti system - Fine golden confetti like PlayerCardReveal */}
         {phase === 'celebration' && (
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {/* Confetti */}
-            {[...Array(isLegendary ? 60 : 30)].map((_, i) => (
-              <motion.div
-                key={`confetti-${i}`}
-                className="absolute w-2 h-2"
-                style={{
-                  background: i % 3 === 0 ? rarityColor : i % 3 === 1 ? config.color : '#DA291C',
-                  left: '50%',
-                  top: '50%',
-                  borderRadius: Math.random() > 0.5 ? '50%' : '0%',
-                }}
-                initial={{ scale: 0, opacity: 0, x: 0, y: 0, rotate: 0 }}
-                animate={{
-                  scale: [0, 1, 0.8],
-                  opacity: [0, 1, 0],
-                  y: [-20, -250 - Math.random() * 150],
-                  x: [(Math.random() - 0.5) * 600],
-                  rotate: [0, Math.random() * 720],
-                }}
-                transition={{
-                  duration: 1.5 + Math.random() * 0.5,
-                  delay: Math.random() * 0.3,
-                  ease: 'easeOut',
-                }}
-              />
-            ))}
+            {[...Array(isLegendary ? 120 : 80)].map((_, i) => {
+              const angle = (i / 100) * Math.PI * 2;
+              const distance = 200 + Math.random() * 250;  // More dispersed
+              const x = Math.cos(angle) * distance;
+              const y = Math.sin(angle) * distance;
 
-            {/* Sparkles */}
-            {[...Array(15)].map((_, i) => (
-              <motion.div
-                key={`sparkle-${i}`}
-                className="absolute w-1 h-1 rounded-full"
-                style={{
-                  background: '#FFFFFF',
-                  left: `${30 + Math.random() * 40}%`,
-                  top: `${30 + Math.random() * 40}%`,
-                  boxShadow: `0 0 8px ${rarityColor}`,
-                }}
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{
-                  scale: [0, 1.2, 0],
-                  opacity: [0, 1, 0],
-                }}
-                transition={{
-                  duration: 0.8,
-                  delay: Math.random() * 1,
-                  repeat: Infinity,
-                  repeatDelay: Math.random() * 1.5,
-                }}
-              />
-            ))}
+              // Golden color variations for depth (like PlayerCardReveal)
+              const goldColors = ['#D4AF37', '#FFD700', '#F4C430', '#FFC107', '#FFDF00'];
+              const goldColor = goldColors[Math.floor(Math.random() * goldColors.length)];
+
+              // Random confetti shapes: rectangle or square - SMALLER
+              const isSquare = i % 3 === 0;
+              const width = isSquare ? '4px' : '6px';  // Smaller
+              const height = isSquare ? '4px' : '3px';  // Smaller
+
+              return (
+                <motion.div
+                  key={`confetti-${i}`}
+                  className="absolute"
+                  style={{
+                    background: `linear-gradient(135deg, ${goldColor} 0%, ${goldColor}DD 100%)`,
+                    width,
+                    height,
+                    left: '50%',
+                    top: '50%',
+                    boxShadow: `0 0 8px ${goldColor}AA`,
+                    borderRadius: isSquare ? '1px' : '0.5px',
+                    willChange: 'transform, opacity',
+                  }}
+                  initial={{ scale: 0, x: 0, y: 0, opacity: 0, rotateZ: 0 }}
+                  animate={{
+                    scale: [0, 1.5, 1, 0],
+                    x: [0, x * 0.3, x * 0.7, x],  // More gradual dispersion
+                    y: [0, y * 0.3, y * 0.7, y],  // More gradual dispersion
+                    opacity: [0, 1, 0.9, 0],
+                    rotateZ: Math.random() * 1440,  // More rotation
+                  }}
+                  transition={{
+                    duration: 2.5,  // Longer duration for smoother effect
+                    delay: Math.random() * 0.2,
+                    ease: [0.25, 0.46, 0.45, 0.94],
+                  }}
+                />
+              );
+            })}
           </div>
         )}
 
@@ -175,33 +274,9 @@ export const PackOpeningModal: React.FC<PackOpeningModalProps> = ({
                 },
               }}
             >
-              {/* Multiple glowing rings around pack - PREMIUM */}
-              {[...Array(3)].map((_, i) => (
-                <motion.div
-                  key={`ring-${i}`}
-                  className="absolute rounded-full pointer-events-none"
-                  style={{
-                    width: `${320 + i * 80}px`,
-                    height: `${320 + i * 80}px`,
-                    border: `${3 - i}px solid ${config.color}`,
-                    boxShadow: `0 0 ${60 + i * 20}px ${config.glowColor}`,
-                  }}
-                  animate={{
-                    scale: [1, 1.1, 1],
-                    opacity: [0.2 + i * 0.1, 0.5 + i * 0.1, 0.2 + i * 0.1],
-                    rotate: i % 2 === 0 ? [0, 360] : [360, 0],
-                  }}
-                  transition={{
-                    duration: 3 + i * 0.5,
-                    repeat: Infinity,
-                    ease: 'linear',
-                  }}
-                />
-              ))}
-
-              {/* Pack card with intense glow */}
+              {/* Pack card with intense glow - Responsive sizing */}
               <div
-                className="w-80 h-[450px] rounded-3xl flex items-center justify-center relative overflow-hidden"
+                className="w-72 h-[400px] sm:w-80 sm:h-[450px] rounded-3xl flex items-center justify-center relative overflow-hidden"
                 style={{
                   background: `linear-gradient(135deg, ${config.color} 0%, #000 100%)`,
                   boxShadow: `0 0 100px ${config.glowColor}, 0 0 200px ${config.glowColor}`,
@@ -270,21 +345,16 @@ export const PackOpeningModal: React.FC<PackOpeningModalProps> = ({
             </motion.div>
           )}
 
-          {/* Phase 2 & 3: Reveal & Celebration - EPIC */}
-          {(phase === 'reveal' || phase === 'celebration') && (
-            <motion.div
-              className="flex flex-col items-center"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              {/* Epic glow behind card */}
+          {/* Phases 2-5: Entry, Spin, Land, Celebration - FIFA ULTIMATE TEAM STYLE! */}
+          {(phase === 'entry' || phase === 'spin' || phase === 'land' || phase === 'celebration') && (
+            <motion.div className="flex flex-col items-center relative">
+              {/* Epic glow behind card - z-index 0 - Responsive */}
               <motion.div
-                className="absolute w-[500px] h-[500px] rounded-full blur-3xl pointer-events-none"
+                className="absolute w-[350px] h-[350px] sm:w-[500px] sm:h-[500px] rounded-full blur-3xl pointer-events-none"
                 style={{
                   background: `radial-gradient(circle, ${rarityColor}60 0%, transparent 70%)`,
+                  zIndex: 0,
                 }}
-                initial={{ scale: 0, opacity: 0 }}
                 animate={{
                   scale: phase === 'celebration' ? [1, 1.3, 1.1] : 1,
                   opacity: phase === 'celebration' ? [0.6, 0.9, 0.7] : 0.6,
@@ -296,25 +366,19 @@ export const PackOpeningModal: React.FC<PackOpeningModalProps> = ({
                 }}
               />
 
-              {/* Reward card with spin effect on reveal */}
+              {/* Reward card with ULTRA dynamic animations - z-index 20 for foreground - Responsive */}
               <motion.div
-                className="w-80 h-[450px] rounded-3xl p-8 flex flex-col items-center justify-center relative overflow-hidden"
+                className="w-72 h-[400px] sm:w-80 sm:h-[450px] rounded-3xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center relative overflow-hidden"
                 style={{
                   background: `linear-gradient(135deg, ${rarityColor}20 0%, #0A1628 100%)`,
                   border: `4px solid ${rarityColor}`,
                   boxShadow: `0 0 60px ${rarityColor}, 0 0 100px ${rarityColor}80, inset 0 0 30px ${rarityColor}40`,
+                  transformStyle: 'preserve-3d',
+                  backfaceVisibility: 'hidden',
+                  willChange: 'transform',
+                  zIndex: 20,
                 }}
-                initial={{ opacity: 0, scale: 0.5, rotateY: -180 }}
-                animate={{
-                  opacity: 1,
-                  scale: 1,
-                  rotateY: phase === 'reveal' ? [0, 360] : 360,
-                }}
-                transition={{
-                  opacity: { duration: 0.3 },
-                  scale: { duration: 0.8, ease: [0.34, 1.56, 0.64, 1] },
-                  rotateY: { duration: 1.2, ease: 'easeOut' },
-                }}
+                {...(getCardVariants() as any)}
               >
                 {/* Holographic shine effect */}
                 <motion.div
@@ -332,9 +396,9 @@ export const PackOpeningModal: React.FC<PackOpeningModalProps> = ({
                   }}
                 />
 
-                {/* Rarity badge - PREMIUM */}
+                {/* Rarity badge - PREMIUM - Responsive */}
                 <motion.div
-                  className="inline-block px-6 py-3 rounded-full mb-6 font-black uppercase text-base tracking-widest relative overflow-hidden"
+                  className="inline-block px-4 py-2 sm:px-6 sm:py-3 rounded-full mb-4 sm:mb-6 font-black uppercase text-sm sm:text-base tracking-widest relative overflow-hidden"
                   style={{
                     background: `linear-gradient(135deg, ${rarityColor} 0%, ${adjustBrightness(rarityColor, 20)} 100%)`,
                     color: isLegendary || result.reward.rarity === 'epic' ? '#000' : '#fff',
@@ -370,9 +434,9 @@ export const PackOpeningModal: React.FC<PackOpeningModalProps> = ({
                   <span className="relative z-10">{result.reward.rarity.toUpperCase()}</span>
                 </motion.div>
 
-                {/* Reward name - BIG AND BOLD */}
+                {/* Reward name - BIG AND BOLD - Responsive */}
                 <h3
-                  className="font-display text-4xl font-black mb-6 text-white uppercase tracking-wide text-center px-4"
+                  className="font-display text-2xl sm:text-3xl md:text-4xl font-black mb-3 sm:mb-4 md:mb-6 text-white uppercase tracking-wide text-center px-2 sm:px-4"
                   style={{
                     textShadow: `0 0 20px ${rarityColor}, 0 0 40px ${rarityColor}80`,
                   }}
@@ -380,8 +444,8 @@ export const PackOpeningModal: React.FC<PackOpeningModalProps> = ({
                   {result.reward.name}
                 </h3>
 
-                {/* Reward description */}
-                <p className="text-text-secondary text-lg leading-relaxed max-w-xs text-center px-4 mb-6">
+                {/* Reward description - Responsive */}
+                <p className="text-text-secondary text-sm sm:text-base md:text-lg leading-relaxed max-w-xs text-center px-2 sm:px-4 mb-4 sm:mb-6">
                   {result.reward.description}
                 </p>
 
@@ -398,19 +462,19 @@ export const PackOpeningModal: React.FC<PackOpeningModalProps> = ({
                 </div>
               </motion.div>
 
-              {/* Collect button - ULTRA PREMIUM */}
+              {/* Collect button - ULTRA PREMIUM - Responsive */}
               {phase === 'celebration' && (
                 <motion.button
-                  className="mt-10 px-16 py-5 rounded-2xl font-display font-black text-xl uppercase tracking-wider relative overflow-hidden"
+                  className="mt-6 sm:mt-8 md:mt-10 px-8 py-3 sm:px-12 sm:py-4 md:px-16 md:py-5 rounded-xl sm:rounded-2xl font-display font-black text-base sm:text-lg md:text-xl uppercase tracking-wider relative overflow-hidden"
                   style={{
                     background: 'linear-gradient(135deg, #DA291C 0%, #A02115 100%)',
                     boxShadow: '0 10px 40px rgba(218, 41, 28, 0.5), 0 0 60px rgba(218, 41, 28, 0.3)',
                     border: '3px solid rgba(255, 255, 255, 0.2)',
                   }}
                   onClick={onClose}
-                  initial={{ opacity: 0, y: 30, scale: 0.8 }}
+                  initial={{ opacity: 0, y: 20, scale: 0.9 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  transition={{ delay: 0.5, type: 'spring', bounce: 0.5 }}
+                  transition={{ delay: 0.3, type: 'spring', bounce: 0.4 }}
                   whileHover={{
                     scale: 1.05,
                     boxShadow: '0 15px 50px rgba(218, 41, 28, 0.7), 0 0 80px rgba(218, 41, 28, 0.5)',
@@ -453,8 +517,7 @@ function getRarityColor(rarity: string): string {
     epic: '#A855F7',        // Purple
     legendary: '#D4AF37',   // Gold
   };
-  const color = colors[rarity] ?? colors.common;
-  return color;
+  return (colors[rarity] || colors.common) as string;
 }
 
 function adjustBrightness(color: string, percent: number): string {

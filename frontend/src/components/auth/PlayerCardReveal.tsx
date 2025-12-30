@@ -2,11 +2,10 @@
  * PlayerCardReveal Component - First-login card reveal animation
  *
  * ULTRA PREMIUM 5-phase animation sequence (7 seconds total):
- * 1. Entry (1.5s) - Card falls from above with rotation
+ * 1. Entry (0.5s) - Card falls from above with rotation
  * 2. Spin (2s) - Dramatic 360° rotation with 3D wobble effect
  * 3. Land (0.5s) - Subtle screen shake on landing
  * 4. Settle (1s) - Card settles with gentle hover
- * 5. Zoom (2s) - Smooth transition to profile icon position
  *
  * NO SKIP BUTTON - Mandatory viewing for maximum immersion!
  */
@@ -56,9 +55,9 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
     setPhase('entry');
 
     // Phase transitions (cumulative timing)
-    const timer1 = setTimeout(() => setPhase('spin'), 1500);      // 0-1.5s: Entry
-    const timer2 = setTimeout(() => setPhase('land'), 3000);      // 1.5-3.0s: Spin (1.5s TOUPIE!)
-    const timer3 = setTimeout(() => setPhase('settle'), 3500);    // 3.0-3.5s: Land
+    const timer1 = setTimeout(() => setPhase('spin'), 500);      // 0-0.5s: Entry
+    const timer2 = setTimeout(() => setPhase('land'), 2000);      // 0.5-2.0s: Spin (1.5s TOUPIE!)
+    const timer3 = setTimeout(() => setPhase('settle'), 2500);    // 2.0-2.5s: Land
     // Card stays visible after settle phase - user must click to continue
 
     return () => {
@@ -86,30 +85,30 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
         return {
           initial: {
             y: -1000,
-            rotateX: -180,
-            rotateY: 0,
+            rotateX: 0,  // No X rotation to avoid parasitic rotation
+            rotateY: 540,  // Start already spinning to hide content from the start!
             scale: 0.8,
             opacity: 0,
           },
           animate: {
             y: 0,
             rotateX: 0,
-            rotateY: 0,
+            rotateY: 720,  // Continue spinning
             scale: 1,
             opacity: 1,
           },
           transition: {
-            duration: 1.5,
-            ease: [0.33, 1, 0.68, 1] as any, // Custom cubic-bezier easing
+            duration: 0.5,
+            ease: [0.33, 1, 0.68, 1] as any,
           },
         };
 
       case 'spin':
         return {
           animate: {
-            rotateY: [0, 720, 1440, 2160, 2880, 3240],  // 9 full rotations - TOUPIE EFFECT!
-            rotateX: [0, 10, -10, 8, -8, 0],  // Simplified wobble
-            scale: [1, 1.04, 1.02, 1.03, 1.01, 1],  // Simplified scale
+            rotateY: 3960,  // Continue from 720 (entry) + 3240 (9 rotations) = 3960 - TOUPIE EFFECT!
+            rotateX: [0, 10, -10, 8, -8, 5, -5, 3, -3, 0],  // Smooth wobble
+            scale: [1, 1.04, 1.02, 1.03, 1.01, 1.02, 1.01, 1.02, 1.01, 1],  // Smooth scale
           },
           transition: {
             duration: 1.5,  // Slightly longer for smoother motion
@@ -120,26 +119,26 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
       case 'land':
         return {
           animate: {
-            rotateY: 0,  // Explicitly reset rotation to 0
-            rotateX: 0,  // Explicitly reset rotation to 0
-            scale: [1, 0.98, 1.02, 1],
+            // Card anchors instantly - no bounce, just a hard stop!
+            rotateX: 0,
+            scale: 1,  // No scale animation - instant anchor
+            y: 0,  // No bounce - stays put
           },
           transition: {
-            duration: 0.5,
-            ease: [0.34, 1.56, 0.64, 1],  // Bouncy ease for landing
+            duration: 0.1,  // Ultra fast - just anchors
+            ease: 'easeOut',  // Simple easing for instant stop
           },
         };
 
       case 'settle':
         return {
           animate: {
-            rotateY: 0,  // Keep rotation at 0
-            rotateX: 0,  // Keep rotation at 0
-            y: [0, -8, 0],
-            scale: [1, 1.01, 1],
+            // Keep rotation stable (don't reset)
+            rotateX: 0,  // Keep X rotation at 0
+            // No y or scale animation - card stays perfectly still after landing
           },
           transition: {
-            duration: 1,
+            duration: 0.5,
             ease: [0.45, 0, 0.55, 1],  // Smooth in-out
           },
         };
@@ -196,8 +195,8 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
       }
       onClick={handleClick}
     >
-      {/* Golden radial burst effect - During spin and celebration */}
-      {(phase === 'spin' || phase === 'land' || phase === 'settle') && (
+      {/* Golden radial burst effect - Shockwave ONLY in settle phase (after land) */}
+      {phase === 'settle' && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none flex items-center justify-center">
           {[...Array(3)].map((_, i) => (
             <motion.div
@@ -216,7 +215,7 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
               }}
               transition={{
                 duration: 2,
-                delay: i * 0.3,
+                delay: i * 0.15,  // Faster succession for impact effect
                 ease: [0.25, 0.46, 0.45, 0.94],
               }}
             />
@@ -224,12 +223,12 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
         </div>
       )}
 
-      {/* Golden Confetti system - Burst during spin phase */}
-      {phase === 'spin' && (
+      {/* Golden Confetti system - Burst when card lands (shockwave effect) */}
+      {(phase === 'land' || phase === 'settle') && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(100)].map((_, i) => {
+          {[...Array(120)].map((_, i) => {
             const angle = (i / 100) * Math.PI * 2;
-            const distance = 150 + Math.random() * 120;
+            const distance = 200 + Math.random() * 250;  // More dispersed
             const x = Math.cos(angle) * distance;
             const y = Math.sin(angle) * distance;
 
@@ -237,37 +236,37 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
             const goldColors = ['#D4AF37', '#FFD700', '#F4C430', '#FFC107', '#FFDF00'];
             const goldColor = goldColors[Math.floor(Math.random() * goldColors.length)];
 
-            // Random confetti shapes: rectangle or square
+            // Random confetti shapes: rectangle or square - SMALLER
             const isSquare = i % 3 === 0;
-            const width = isSquare ? '8px' : '12px';
-            const height = isSquare ? '8px' : '6px';
+            const width = isSquare ? '4px' : '6px';  // Smaller
+            const height = isSquare ? '4px' : '3px';  // Smaller
 
             return (
               <motion.div
                 key={`confetti-${i}`}
                 className="absolute"
                 style={{
-                  background: `linear-gradient(135deg, ${goldColor} 0%, ${goldColor}CC 100%)`,
+                  background: `linear-gradient(135deg, ${goldColor} 0%, ${goldColor}DD 100%)`,
                   width,
                   height,
                   left: '50%',
                   top: '50%',
-                  boxShadow: `0 0 15px ${goldColor}AA, 0 0 8px ${goldColor}`,
-                  borderRadius: isSquare ? '2px' : '1px',
+                  boxShadow: `0 0 8px ${goldColor}AA`,
+                  borderRadius: isSquare ? '1px' : '0.5px',
                   willChange: 'transform, opacity',
                 }}
                 initial={{ scale: 0, x: 0, y: 0, opacity: 0, rotateZ: 0 }}
                 animate={{
-                  scale: [0, 1.2, 0.8, 0],
-                  x: [0, x * 0.5, x],
-                  y: [0, y * 0.5, y],
-                  opacity: [0, 1, 0.8, 0],
-                  rotateZ: Math.random() * 1080,
+                  scale: [0, 1.5, 1, 0],
+                  x: [0, x * 0.3, x * 0.7, x],  // More gradual dispersion
+                  y: [0, y * 0.3, y * 0.7, y],  // More gradual dispersion
+                  opacity: [0, 1, 0.9, 0],
+                  rotateZ: Math.random() * 1440,  // More rotation
                 }}
                 transition={{
-                  duration: 2,
-                  delay: Math.random() * 0.3,
-                  ease: [0.25, 0.46, 0.45, 0.94],  // Smoother confetti fall
+                  duration: 2.5,  // Longer duration for smoother effect
+                  delay: Math.random() * 0.2,
+                  ease: [0.25, 0.46, 0.45, 0.94],
                 }}
               />
             );

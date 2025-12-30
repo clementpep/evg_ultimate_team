@@ -150,7 +150,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
                   <p className="text-xs text-text-secondary uppercase tracking-wide">
                     Rang
                   </p>
-                  <p className="text-lg font-bold text-psg-blue font-numbers">
+                  <p className="text-lg font-bold text-fifa-gold font-numbers">
                     #{rank > 0 ? rank : '-'}
                   </p>
                 </div>
