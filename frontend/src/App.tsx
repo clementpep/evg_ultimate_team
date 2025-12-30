@@ -21,6 +21,18 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   const { shouldTriggerReveal, resetReveal } = useCardReveal();
   const [showReveal, setShowReveal] = useState(false);
 
+  // Check for reset query parameter to clear first-login localStorage
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('resetFirstLogin') === 'true' && user?.id) {
+      const storageKey = `evg_has_seen_card_reveal_${user.id}`;
+      localStorage.removeItem(storageKey);
+      console.log('✅ First login state reset successfully');
+      // Remove the query parameter from URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [user?.id]);
+
   // Trigger card reveal animation immediately after authentication (first login)
   useEffect(() => {
     if (isAuthenticated && shouldShowReveal && !isLoading && user && !user.is_admin) {
@@ -64,7 +76,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
           isOpen={showReveal}
           username={user.username}
           avatarUrl={getAvatarUrl(user.username)}
-          isGroom={user.is_groom}
+          isReplay={shouldTriggerReveal}
           onComplete={handleRevealComplete}
         />
       )}
@@ -130,25 +142,25 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <>
                   <Link
                     to="/"
-                    className="text-text-secondary font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 transition-all hover:text-white hover:bg-psg-red/10"
+                    className="text-white font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 rounded-md transition-all hover:bg-fifa-gold/20 focus:outline-none focus:ring-2 focus:ring-fifa-gold focus:ring-offset-2 focus:ring-offset-bg-primary"
                   >
                     Accueil
                   </Link>
                   <Link
                     to="/leaderboard"
-                    className="text-text-secondary font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 transition-all hover:text-white hover:bg-psg-red/10"
+                    className="text-white font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 rounded-md transition-all hover:bg-fifa-gold/20 focus:outline-none focus:ring-2 focus:ring-fifa-gold focus:ring-offset-2 focus:ring-offset-bg-primary"
                   >
                     Classement
                   </Link>
                   <Link
                     to="/challenges"
-                    className="text-text-secondary font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 transition-all hover:text-white hover:bg-psg-red/10"
+                    className="text-white font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 rounded-md transition-all hover:bg-fifa-gold/20 focus:outline-none focus:ring-2 focus:ring-fifa-gold focus:ring-offset-2 focus:ring-offset-bg-primary"
                   >
                     Défis
                   </Link>
                   <Link
                     to="/packs"
-                    className="text-text-secondary font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 transition-all hover:text-white hover:bg-psg-red/10"
+                    className="text-white font-semibold text-xs sm:text-sm uppercase tracking-wide px-2 sm:px-4 py-2 rounded-md transition-all hover:bg-fifa-gold/20 focus:outline-none focus:ring-2 focus:ring-fifa-gold focus:ring-offset-2 focus:ring-offset-bg-primary"
                   >
                     Packs
                   </Link>

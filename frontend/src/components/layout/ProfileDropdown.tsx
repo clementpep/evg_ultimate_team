@@ -55,25 +55,39 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Avatar Button */}
+      {/* Avatar Button - Responsive Mobile-First */}
       <motion.button
         layoutId="player-card-avatar"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-10 h-10 min-w-[44px] min-h-[44px] rounded-full overflow-hidden border-2 border-psg-red shadow-glow hover:shadow-glow-gold transition-all focus:outline-none focus:ring-2 focus:ring-psg-red focus:ring-offset-2 focus:ring-offset-bg-primary bg-bg-card p-0.5"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
+        className="
+          w-12 h-12 sm:w-11 sm:h-11 md:w-12 md:h-12
+          min-w-[48px] min-h-[48px]
+          rounded-full overflow-hidden
+          border-2 sm:border-[3px] border-fifa-gold
+          shadow-glow-gold hover:shadow-glow-gold
+          transition-all duration-200
+          focus:outline-none focus:ring-2 focus:ring-fifa-gold focus:ring-offset-2 focus:ring-offset-bg-primary
+          bg-bg-card p-0.5
+        "
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.96 }}
         aria-label="Open profile menu"
         aria-expanded={isOpen}
       >
-        <img
-          src={avatarUrl}
-          alt={username}
-          className="w-full h-full object-contain"
-          onError={(e) => {
-            // Fallback to default if image fails
-            e.currentTarget.src = '/fut_card_default.png';
-          }}
-        />
+        <div className="w-full h-full rounded-full overflow-hidden relative">
+          <img
+            src={avatarUrl}
+            alt={username}
+            className="w-full h-full object-cover"
+            style={{
+              objectPosition: 'center 30%',
+              transform: 'scale(1.8)',
+            }}
+            onError={(e) => {
+              e.currentTarget.src = '/fut_card_default.png';
+            }}
+          />
+        </div>
       </motion.button>
 
       {/* Dropdown Menu */}
@@ -84,7 +98,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute right-0 mt-2 w-64 max-sm:w-screen max-sm:left-1/2 max-sm:-translate-x-1/2 rounded-lg shadow-xl overflow-hidden z-50"
+            className="absolute right-0 mt-2 w-64 sm:w-72 rounded-lg shadow-xl overflow-hidden z-50"
             style={{
               background: '#1A2942',
               border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -93,15 +107,21 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
             {/* Header avec infos utilisateur */}
             <div className="p-4 border-b border-white/10">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full border-2 border-psg-red overflow-hidden bg-bg-card p-0.5 flex-shrink-0">
-                  <img
-                    src={avatarUrl}
-                    className="w-full h-full object-contain"
-                    alt={username}
-                    onError={(e) => {
-                      e.currentTarget.src = '/fut_card_default.png';
-                    }}
-                  />
+                <div className="w-14 h-14 rounded-full border-2 border-fifa-gold overflow-hidden bg-bg-card p-0.5 flex-shrink-0">
+                  <div className="w-full h-full rounded-full overflow-hidden relative">
+                    <img
+                      src={avatarUrl}
+                      className="w-full h-full object-cover"
+                      style={{
+                        objectPosition: 'center 30%',
+                        transform: 'scale(1.8)',
+                      }}
+                      alt={username}
+                      onError={(e) => {
+                        e.currentTarget.src = '/fut_card_default.png';
+                      }}
+                    />
+                  </div>
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-white truncate">{username}</p>

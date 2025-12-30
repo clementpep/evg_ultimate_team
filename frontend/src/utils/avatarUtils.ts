@@ -12,6 +12,8 @@
 export const normalizeUsername = (username: string): string => {
   return username
     .toLowerCase()
+    .normalize('NFD')         // Decompose accented characters (é → e + accent)
+    .replace(/[\u0300-\u036f]/g, '')  // Remove diacritics (accents)
     .replace(/\s+/g, '')      // Remove spaces
     .replace(/\./g, '')       // Remove periods
     .replace(/[^a-z]/g, '');  // Keep only letters

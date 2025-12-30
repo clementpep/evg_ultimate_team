@@ -18,17 +18,17 @@ interface PlayerCardRevealProps {
   isOpen: boolean;
   username: string;
   avatarUrl: string;
-  isGroom: boolean;
+  isReplay?: boolean;
   onComplete: () => void;
 }
 
-type AnimationPhase = 'entry' | 'spin' | 'land' | 'settle' | 'zoom';
+type AnimationPhase = 'entry' | 'spin' | 'land' | 'settle';
 
 export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
   isOpen,
   username,
   avatarUrl,
-  isGroom,
+  isReplay = false,
   onComplete,
 }) => {
   const [phase, setPhase] = useState<AnimationPhase>('entry');
@@ -57,22 +57,16 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
 
     // Phase transitions (cumulative timing)
     const timer1 = setTimeout(() => setPhase('spin'), 1500);      // 0-1.5s: Entry
-    const timer2 = setTimeout(() => setPhase('land'), 4000);      // 1.5-4s: Spin (2.5s now)
-    const timer3 = setTimeout(() => setPhase('settle'), 4500);    // 4-4.5s: Land
-    const timer4 = setTimeout(() => setPhase('zoom'), 5500);      // 4.5-5.5s: Settle
-    const timer5 = setTimeout(() => {
-      // 5.5-7.5s: Zoom
-      // Animation will complete and call onComplete
-    }, 7500);
+    const timer2 = setTimeout(() => setPhase('land'), 2700);      // 1.5-2.7s: Spin (1.2s TOUPIE!)
+    const timer3 = setTimeout(() => setPhase('settle'), 3200);    // 2.7-3.2s: Land
+    // Card stays visible after settle phase - user must click to continue
 
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
-      clearTimeout(timer4);
-      clearTimeout(timer5);
     };
-  }, [isOpen, imageLoaded]);
+  }, [isOpen, imageLoaded, isReplay]);
 
   if (!isOpen) return null;
 
@@ -113,14 +107,14 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
       case 'spin':
         return {
           animate: {
-            rotateY: [0, 360, 720, 1080],  // 3 full rotations for more dramatic effect
-            rotateX: [0, 15, -15, 10, -10, 0],
-            scale: [1, 1.08, 1.05, 1.08, 1.02, 1],
+            rotateY: [0, 360, 720, 1080, 1440, 1800, 2160, 2520, 2880, 3240],  // 9 full rotations - TOUPIE EFFECT!
+            rotateX: [0, 15, -15, 12, -12, 10, -10, 8, -8, 5, -5, 0],
+            scale: [1, 1.05, 1.03, 1.06, 1.02, 1.04, 1.02, 1.03, 1.01, 1.02, 1],
           },
           transition: {
-            duration: 2.5,  // Slightly longer to accommodate more rotations
-            times: [0, 0.25, 0.5, 0.75, 0.9, 1],
-            ease: 'easeInOut',
+            duration: 1.2,  // ULTRA FAST spinning
+            times: [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],
+            ease: [0.2, 0, 0.2, 1],  // Fast linear-ish easing for toupie effect
           },
         };
 
@@ -131,7 +125,7 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
           },
           transition: {
             duration: 0.5,
-            ease: 'easeOut',
+            ease: [0.34, 1.56, 0.64, 1],  // Bouncy ease for landing
           },
         };
 
@@ -143,21 +137,7 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
           },
           transition: {
             duration: 1,
-            ease: 'easeInOut',
-          },
-        };
-
-      case 'zoom':
-        return {
-          animate: {
-            scale: 0.12,
-            borderRadius: '50%',
-            x: window.innerWidth / 2 - 80, // Move to top-right (approximate)
-            y: -(window.innerHeight / 2 - 60),
-          },
-          transition: {
-            duration: 2,
-            ease: [0.33, 1, 0.68, 1] as any, // Custom cubic-bezier easing
+            ease: [0.45, 0, 0.55, 1],  // Smooth in-out
           },
         };
 
@@ -180,6 +160,13 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
     return {};
   };
 
+  // Handle click to close after animation settles
+  const handleClick = () => {
+    if (phase === 'settle') {
+      onComplete();
+    }
+  };
+
   return (
     <motion.div
       className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
@@ -187,6 +174,8 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
         background: 'radial-gradient(circle at center, #1A2942 0%, #0A1628 100%)',
         perspective: 2000,
         perspectiveOrigin: '50% 50%',
+        willChange: phase === 'land' ? 'transform' : 'auto',
+        cursor: phase === 'settle' ? 'pointer' : 'default',
       }}
       initial={{ opacity: 0 }}
       animate={{
@@ -197,11 +186,12 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
       transition={
         phase === 'land'
           ? {
-              x: { duration: 0.5, times: [0, 0.2, 0.4, 0.6, 0.8, 1] },
-              y: { duration: 0.5, times: [0, 0.2, 0.4, 0.6, 0.8, 1] },
+              x: { duration: 0.5, times: [0, 0.2, 0.4, 0.6, 0.8, 1], ease: [0.34, 1.56, 0.64, 1] },
+              y: { duration: 0.5, times: [0, 0.2, 0.4, 0.6, 0.8, 1], ease: [0.34, 1.56, 0.64, 1] },
             }
           : { duration: 0.3 }
       }
+      onClick={handleClick}
     >
       {/* Golden radial burst effect - During spin and celebration */}
       {(phase === 'spin' || phase === 'land' || phase === 'settle') && (
@@ -213,6 +203,7 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
               style={{
                 border: '3px solid #D4AF37',
                 boxShadow: '0 0 50px rgba(212, 175, 55, 0.7), 0 0 25px rgba(255, 215, 0, 0.5)',
+                willChange: 'width, height, opacity',
               }}
               initial={{ width: 0, height: 0, opacity: 0 }}
               animate={{
@@ -223,7 +214,7 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
               transition={{
                 duration: 2,
                 delay: i * 0.3,
-                ease: 'easeOut',
+                ease: [0.25, 0.46, 0.45, 0.94],
               }}
             />
           ))}
@@ -260,6 +251,7 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
                   top: '50%',
                   boxShadow: `0 0 15px ${goldColor}AA, 0 0 8px ${goldColor}`,
                   borderRadius: isSquare ? '2px' : '1px',
+                  willChange: 'transform, opacity',
                 }}
                 initial={{ scale: 0, x: 0, y: 0, opacity: 0, rotateZ: 0 }}
                 animate={{
@@ -267,12 +259,12 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
                   x: [0, x * 0.5, x],
                   y: [0, y * 0.5, y],
                   opacity: [0, 1, 0.8, 0],
-                  rotateZ: Math.random() * 1080, // Full spins for confetti effect
+                  rotateZ: Math.random() * 1080,
                 }}
                 transition={{
                   duration: 2,
                   delay: Math.random() * 0.3,
-                  ease: 'easeOut',
+                  ease: [0.25, 0.46, 0.45, 0.94],  // Smoother confetti fall
                 }}
               />
             );
@@ -280,66 +272,25 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
         </div>
       )}
 
-      {/* Main card */}
-      <motion.div
-        className="relative w-80 h-[450px] rounded-lg overflow-hidden shadow-2xl"
+      {/* Main card - Direct PNG with 3D transforms (no container wrapper) */}
+      <motion.img
+        src={avatarUrl}
+        alt={username}
+        className="w-80 h-[450px] object-contain pointer-events-none"
         style={{
           transformStyle: 'preserve-3d',
           backfaceVisibility: 'hidden',
-          boxShadow:
-            phase === 'settle' || phase === 'zoom'
-              ? '0 0 80px rgba(212, 175, 55, 0.9), 0 0 40px rgba(255, 215, 0, 0.6)'
-              : '0 0 60px rgba(212, 175, 55, 0.7), 0 0 30px rgba(255, 215, 0, 0.5)',
+          willChange: 'transform',
+          filter:
+            phase === 'settle'
+              ? 'drop-shadow(0 0 80px rgba(212, 175, 55, 0.9)) drop-shadow(0 0 40px rgba(255, 215, 0, 0.6))'
+              : 'drop-shadow(0 0 60px rgba(212, 175, 55, 0.7)) drop-shadow(0 0 30px rgba(255, 215, 0, 0.5))',
         }}
         {...(getCardVariants() as any)}
-        onAnimationComplete={() => {
-          if (phase === 'zoom') {
-            onComplete();
-          }
+        onError={(e) => {
+          e.currentTarget.src = '/fut_card_default.png';
         }}
-      >
-        <img
-          src={avatarUrl}
-          alt={username}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            e.currentTarget.src = '/fut_card_default.png';
-          }}
-        />
-
-        {/* Holographic shine effect during spin */}
-        {phase === 'spin' && (
-          <motion.div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.3) 50%, transparent 100%)',
-              backgroundSize: '200% 100%',
-            }}
-            animate={{
-              backgroundPosition: ['0% 0%', '200% 0%'],
-            }}
-            transition={{
-              duration: 1.2,
-              ease: 'linear',
-              repeat: 1,
-            }}
-          />
-        )}
-
-        {/* Groom badge overlay if applicable */}
-        {isGroom && (phase === 'settle' || phase === 'zoom') && (
-          <motion.div
-            className="absolute top-4 left-4 bg-fifa-gold/90 text-bg-primary px-3 py-1 rounded-full font-bold text-sm flex items-center gap-1"
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3, duration: 0.5 }}
-          >
-            <span>👑</span>
-            <span>The Groom</span>
-          </motion.div>
-        )}
-      </motion.div>
+      />
 
       {/* Golden background glow effect */}
       <motion.div
@@ -355,10 +306,10 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
         }}
         animate={{
           scale: phase === 'settle' ? [1, 1.3, 1] : phase === 'spin' ? [1, 1.1, 1] : 1,
-          opacity: phase === 'zoom' ? 0 : 0.9,
+          opacity: 0.9,
         }}
         transition={{
-          duration: phase === 'settle' ? 1 : phase === 'spin' ? 2.5 : 0.5,
+          duration: phase === 'settle' ? 1 : phase === 'spin' ? 1.2 : 0.5,
           repeat: phase === 'spin' ? Infinity : 0,
         }}
       />
