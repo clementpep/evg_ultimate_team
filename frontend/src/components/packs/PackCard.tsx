@@ -82,21 +82,52 @@ export const PackCard: React.FC<PackCardProps> = ({ tier, count, canOpen, userCr
                 OUVRIR
               </button>
             ) : canPurchase ? (
-              <button className="btn-secondary w-full" onClick={(e) => { e.stopPropagation(); onPurchase(); }}>
-                ACHETER ({config.cost} crédits)
-              </button>
+              <>
+                <button
+                  className="w-full py-3 px-4 rounded-lg font-bold uppercase tracking-wide transition-all duration-300 relative overflow-hidden group"
+                  style={{
+                    background: `linear-gradient(135deg, ${config.color}dd 0%, ${config.color} 50%, ${config.color}dd 100%)`,
+                    color: '#fff',
+                    border: `2px solid ${config.color}`,
+                    boxShadow: `0 4px 15px ${config.glowColor}40, 0 0 20px ${config.glowColor}30`,
+                  }}
+                  onClick={(e) => { e.stopPropagation(); onPurchase(); }}
+                >
+                  <span className="relative z-10 flex items-center justify-center gap-2">
+                    <span>ACHETER</span>
+                    <span className="text-sm">({config.cost} crédits)</span>
+                  </span>
+                  <div
+                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                    style={{
+                      background: `linear-gradient(135deg, ${config.color} 0%, ${config.color}ee 50%, ${config.color} 100%)`,
+                    }}
+                  />
+                </button>
+                <div className="text-xs text-fifa-green flex items-center justify-center gap-1 font-semibold">
+                  <IoMdCheckmarkCircle className="text-sm" /> {userCredits} crédits disponibles
+                </div>
+              </>
             ) : (
-              <button
-                className="btn-secondary w-full opacity-40 cursor-not-allowed"
-                disabled
-              >
-                ACHETER ({config.cost} crédits)
-              </button>
-            )}
-            {canPurchase && !canOpen && (
-              <div className="text-xs text-fifa-green flex items-center justify-center gap-1">
-                <IoMdCheckmarkCircle /> {userCredits} crédits disponibles
-              </div>
+              <>
+                <button
+                  className="w-full py-3 px-4 rounded-lg font-bold uppercase tracking-wide cursor-not-allowed"
+                  style={{
+                    background: 'linear-gradient(135deg, #2D3748 0%, #1A202C 100%)',
+                    color: '#718096',
+                    border: '2px solid #4A5568',
+                  }}
+                  disabled
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    <span>ACHETER</span>
+                    <span className="text-sm">({config.cost} crédits)</span>
+                  </span>
+                </button>
+                <div className="text-xs text-red-400 flex items-center justify-center gap-1">
+                  Crédits insuffisants ({userCredits}/{config.cost})
+                </div>
+              </>
             )}
           </div>
         </div>
