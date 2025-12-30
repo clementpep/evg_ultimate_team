@@ -10,16 +10,23 @@ FROM node:20-alpine AS frontend-builder
 
 WORKDIR /app/frontend
 
+# Install git and git-lfs to fetch LFS files
+RUN apk add --no-cache git git-lfs
+
 # Copy frontend package files
 COPY frontend/package*.json ./
 
 # Install ALL dependencies (including devDependencies for build)
 RUN npm ci
 
-# Copy frontend source code
-# Note: Hugging Face Spaces automatically pulls Git LFS files before Docker build,
-# so FUT card PNG images (stored in LFS) will be available in frontend/public/
+# Copy frontend source code (may include LFS pointer files)
 COPY frontend/ ./
+
+# CRITICAL: Fetch actual LFS files (FUT card PNGs)
+# This replaces LFS pointer files with real image data
+RUN git lfs install && \
+    git lfs fetch --all 2>/dev/null || true && \
+    git lfs checkout 2>/dev/null || true
 
 # Build frontend for production
 RUN npm run build

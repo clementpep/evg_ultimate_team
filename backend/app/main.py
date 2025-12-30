@@ -243,6 +243,45 @@ async def health_check():
     }
 
 
+@app.get("/debug/images")
+async def debug_images():
+    """
+    Debug endpoint to list all PNG files and their sizes.
+
+    Helps diagnose LFS pointer files vs real images.
+    """
+    import os
+
+    images_info = []
+
+    if FRONTEND_DIST.exists():
+        # List all PNG files in dist directory
+        for file in FRONTEND_DIST.glob("*.png"):
+            size_bytes = file.stat().st_size
+            # Read first 50 bytes to check if it's an LFS pointer
+            with open(file, 'rb') as f:
+                header = f.read(50)
+
+            is_lfs_pointer = b'version https://git-lfs.github.com' in header
+
+            images_info.append({
+                "filename": file.name,
+                "size_bytes": size_bytes,
+                "size_kb": round(size_bytes / 1024, 2),
+                "size_mb": round(size_bytes / (1024 * 1024), 2),
+                "is_lfs_pointer": is_lfs_pointer,
+                "path": str(file.relative_to(FRONTEND_DIST))
+            })
+
+    return {
+        "success": True,
+        "dist_path": str(FRONTEND_DIST),
+        "dist_exists": FRONTEND_DIST.exists(),
+        "total_images": len(images_info),
+        "images": sorted(images_info, key=lambda x: x["filename"])
+    }
+
+
 # Catch-all route for SPA (must be last!)
 # Serves index.html for all routes not matched above (for React Router)
 @app.get("/{full_path:path}")
