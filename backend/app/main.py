@@ -11,7 +11,8 @@ from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from pathlib import Path
 from app.config import get_settings
-from app.database import init_db, get_db
+from app.database import init_db, get_db, SessionLocal
+from app.seed import auto_seed_if_empty
 from app.routes import (
     auth_router,
     participants_router,
@@ -55,6 +56,13 @@ async def lifespan(app: FastAPI):
     # Initialize database
     init_db()
     logger.info("Database initialized")
+
+    # Auto-seed database if empty
+    db = SessionLocal()
+    try:
+        auto_seed_if_empty(db)
+    finally:
+        db.close()
 
     # Start pack scheduler
     start_scheduler()
