@@ -253,6 +253,7 @@ def auto_seed_if_empty(db: Session) -> None:
     """
     # Check if database is empty (no participants)
     participant_count = db.query(Participant).count()
+    reward_count = db.query(PackReward).count()
 
     if participant_count == 0:
         logger.info("Database is empty - auto-seeding with initial data...")
@@ -261,4 +262,11 @@ def auto_seed_if_empty(db: Session) -> None:
         seed_rewards(db)
         logger.info("✓ Database auto-seed completed successfully!")
     else:
-        logger.info(f"Database already contains {participant_count} participants - skipping seed")
+        logger.info(f"Database already contains {participant_count} participants")
+
+        # Seed rewards even if participants exist (in case of migration)
+        if reward_count == 0:
+            logger.info("No rewards found - seeding pack rewards...")
+            seed_rewards(db)
+        else:
+            logger.info(f"Database already contains {reward_count} rewards - skipping reward seed")
