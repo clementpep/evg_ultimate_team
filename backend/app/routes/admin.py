@@ -6,8 +6,7 @@ Handles admin-only operations like database reset, bulk operations, etc.
 
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.database import get_db, SessionLocal, engine
-from app.models import Base
+from app.database import get_db, SessionLocal, engine, Base
 from app.seed import auto_seed_if_empty
 from app.schemas.common import SuccessResponse
 from app.utils.dependencies import require_admin
