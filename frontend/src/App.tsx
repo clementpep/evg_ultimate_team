@@ -1,33 +1,112 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AuthProvider, useAuth } from '@context/AuthContext';
 import { ToastProvider } from '@context/ToastContext';
+import { CardRevealProvider, useCardReveal } from '@context/CardRevealContext';
 import { LoginPage } from '@pages/LoginPage';
 import { HomePage } from '@pages/HomePage';
 import { LeaderboardPage } from '@pages/LeaderboardPage';
 import { ChallengesPage } from '@pages/ChallengesPage';
 import { PacksPage } from '@pages/PacksPage';
 import { AdminDashboard } from '@pages/AdminDashboard';
-import { Button } from '@components/common/Button';
+import { ProfileDropdown } from '@components/layout/ProfileDropdown';
+import { PlayerCardReveal } from '@components/auth/PlayerCardReveal';
+import { getAvatarUrl } from '@utils/avatarUtils';
+import { useFirstLogin } from '@hooks/useFirstLogin';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const { shouldShowReveal, markAsRevealed } = useFirstLogin(user?.id);
+  const { shouldTriggerReveal, resetReveal } = useCardReveal();
+  const [showReveal, setShowReveal] = useState(false);
+
+  // Trigger card reveal animation immediately after authentication (first login)
+  useEffect(() => {
+    if (isAuthenticated && shouldShowReveal && !isLoading && user && !user.is_admin) {
+      // Small delay to let auth settle
+      setTimeout(() => setShowReveal(true), 300);
+    }
+  }, [isAuthenticated, shouldShowReveal, isLoading, user]);
+
+  // Trigger card reveal animation on demand (replay from profile)
+  useEffect(() => {
+    if (shouldTriggerReveal && isAuthenticated && user && !user.is_admin) {
+      setShowReveal(true);
+    }
+  }, [shouldTriggerReveal, isAuthenticated, user]);
+
+  const handleRevealComplete = () => {
+    if (shouldShowReveal) {
+      markAsRevealed(); // Only mark as revealed if it was the first login
+    }
+    setShowReveal(false);
+    resetReveal(); // Reset the manual trigger
+  };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-bg-primary">
         <div className="loading-spinner"></div>
       </div>
     );
   }
 
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return (
+    <>
+      {/* First-login card reveal animation (non-admins only) */}
+      {showReveal && user && !user.is_admin && (
+        <PlayerCardReveal
+          isOpen={showReveal}
+          username={user.username}
+          avatarUrl={getAvatarUrl(user.username)}
+          isGroom={user.is_groom}
+          onComplete={handleRevealComplete}
+        />
+      )}
+      {children}
+    </>
+  );
 };
 
 // Layout Component
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, logout } = useAuth();
+  const { triggerReveal } = useCardReveal();
+  const [totalPoints, setTotalPoints] = useState<number>(0);
+  const [userRank, setUserRank] = useState<number>(0);
+
+  // Fetch participant data and rank for non-admin users
+  useEffect(() => {
+    if (!user || user.is_admin) return;
+
+    const fetchUserData = async () => {
+      try {
+        // Import API functions dynamically to avoid circular dependencies
+        const { getMyProfile } = await import('@services/participantService');
+        const { getParticipantRank } = await import('@services/leaderboardService');
+
+        // Fetch profile data
+        const profile = await getMyProfile();
+        setTotalPoints(profile.total_points);
+
+        // Fetch rank
+        const rankData = await getParticipantRank(user.id);
+        setUserRank(rankData.rank);
+      } catch (error) {
+        console.error('Failed to fetch user data:', error);
+        // Set defaults on error
+        setTotalPoints(0);
+        setUserRank(0);
+      }
+    };
+
+    fetchUserData();
+  }, [user]);
 
   return (
     <div className="min-h-screen">
@@ -75,15 +154,22 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   </Link>
                 </>
               )}
-              <div className="flex items-center gap-1 sm:gap-2 pl-2 sm:pl-4 ml-2 sm:ml-4 border-l border-white/10">
-                <span className="hidden sm:inline text-xs sm:text-sm text-white font-semibold">{user?.username}</span>
-                <Button
-                  variant="primary"
-                  className="text-xs !py-1.5 !px-3 sm:!px-4 !font-bold"
-                  onClick={logout}
-                >
-                  Déconnexion
-                </Button>
+              <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 ml-2 sm:ml-4 border-l border-white/10">
+                {/* Username caché sur mobile, visible sur desktop */}
+                <span className="hidden lg:inline text-sm text-white font-semibold">
+                  {user?.username}
+                </span>
+
+                {/* ProfileDropdown remplace le bouton de déconnexion */}
+                <ProfileDropdown
+                  username={user?.username || ''}
+                  avatarUrl={getAvatarUrl(user?.username || '')}
+                  isGroom={user?.is_groom || false}
+                  totalPoints={totalPoints}
+                  rank={userRank}
+                  onLogout={logout}
+                  onReplayAnimation={triggerReveal}
+                />
               </div>
             </div>
           </div>
@@ -170,9 +256,11 @@ const App: React.FC = () => {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <ToastProvider>
-          <AppContent />
-        </ToastProvider>
+        <CardRevealProvider>
+          <ToastProvider>
+            <AppContent />
+          </ToastProvider>
+        </CardRevealProvider>
       </AuthProvider>
     </BrowserRouter>
   );
