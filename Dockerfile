@@ -52,7 +52,7 @@ RUN mkdir -p /app/data
 # Set environment variables for production
 ENV PYTHONUNBUFFERED=1 \
     ENVIRONMENT=production \
-    DATABASE_URL=sqlite:///./data/evg_ultimate_team.db \
+    DATABASE_URL=sqlite:///../data/evg_ultimate_team.db \
     API_HOST=0.0.0.0 \
     API_PORT=7860 \
     CORS_ORIGINS=* \
@@ -65,5 +65,8 @@ EXPOSE 7860
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:7860/health')"
 
+# Change to backend directory for proper Python module resolution
+WORKDIR /app/backend
+
 # Run the application
-CMD ["python", "-m", "uvicorn", "backend.app.main:app", "--host", "0.0.0.0", "--port", "7860"]
+CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860"]
