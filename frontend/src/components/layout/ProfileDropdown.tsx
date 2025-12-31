@@ -119,7 +119,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
                       }}
                       alt={username}
                       onError={(e) => {
-                        e.currentTarget.src = '/fut_card_default.png';
+                        e.currentTarget.src = getDefaultAvatarUrl();
                       }}
                     />
                   </div>

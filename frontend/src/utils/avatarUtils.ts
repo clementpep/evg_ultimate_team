@@ -1,8 +1,10 @@
 /**
  * Avatar Utilities - Username to FUT Card mapping
  *
- * Maps usernames to FUT card images in /public
+ * Maps usernames to FUT card images imported from assets
  */
+
+import { futCards, defaultFutCard } from '../assets/futCards';
 
 /**
  * Normalize username to match filename pattern
@@ -21,11 +23,11 @@ export const normalizeUsername = (username: string): string => {
 
 /**
  * Get avatar URL from username
- * Maps to FUT card images: /fut_card_{normalized_username}.png
+ * Maps to FUT card images imported from assets
  */
 export const getAvatarUrl = (username: string): string => {
   const normalized = normalizeUsername(username);
-  return `/fut_card_${normalized}.png`;
+  return futCards[normalized] || defaultFutCard;
 };
 
 /**
@@ -34,5 +36,5 @@ export const getAvatarUrl = (username: string): string => {
  * Uses Paul C.'s card (the groom) as fallback
  */
 export const getDefaultAvatarUrl = (): string => {
-  return '/fut_card_paulc.png';
+  return defaultFutCard;
 };

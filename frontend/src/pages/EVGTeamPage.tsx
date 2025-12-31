@@ -12,6 +12,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getLeaderboard } from '@services/leaderboardService';
 import { getAvatarUrl, getDefaultAvatarUrl } from '@utils/avatarUtils';
 import { ParticipantWithRank } from '@/types/participant';
+import { backgrounds } from '@/assets/futCards';
 
 export const EVGTeamPage: React.FC = () => {
   const [participants, setParticipants] = useState<ParticipantWithRank[]>([]);
@@ -84,7 +85,7 @@ export const EVGTeamPage: React.FC = () => {
         <div
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{
-            backgroundImage: 'url(/evg_team_background.png)',
+            backgroundImage: `url(${backgrounds.evgTeamBackground})`,
             filter: 'brightness(0.85)',
           }}
         />
@@ -171,7 +172,7 @@ export const EVGTeamPage: React.FC = () => {
                   filter: 'drop-shadow(0 0 20px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 10px rgba(212, 175, 55, 0.4))',
                 }}
                 onError={(e) => {
-                  e.currentTarget.src = '/fut_card_default.png';
+                  e.currentTarget.src = getDefaultAvatarUrl();
                 }}
               />
               {/* Points Badge */}
@@ -216,7 +217,7 @@ export const EVGTeamPage: React.FC = () => {
                     filter: 'drop-shadow(0 0 30px rgba(212, 175, 55, 0.8)) drop-shadow(0 0 15px rgba(255, 215, 0, 0.6))',
                   }}
                   onError={(e) => {
-                    e.currentTarget.src = '/fut_card_default.png';
+                    e.currentTarget.src = getDefaultAvatarUrl();
                   }}
                 />
                 <div
@@ -254,7 +255,7 @@ export const EVGTeamPage: React.FC = () => {
                     filter: 'drop-shadow(0 0 20px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 10px rgba(212, 175, 55, 0.4))',
                   }}
                   onError={(e) => {
-                    e.currentTarget.src = '/fut_card_default.png';
+                    e.currentTarget.src = getDefaultAvatarUrl();
                   }}
                 />
                 <div
@@ -307,7 +308,7 @@ export const EVGTeamPage: React.FC = () => {
                     : 'drop-shadow(0 0 60px rgba(212, 175, 55, 0.7)) drop-shadow(0 0 30px rgba(255, 215, 0, 0.5))',
                 }}
                 onError={(e) => {
-                  e.currentTarget.src = '/fut_card_default.png';
+                  e.currentTarget.src = getDefaultAvatarUrl();
                 }}
               />
             </motion.div>
