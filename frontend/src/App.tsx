@@ -11,6 +11,7 @@ import { PacksPage } from '@pages/PacksPage';
 import { AdminDashboard } from '@pages/AdminDashboard';
 import { EVGTeamPage } from '@pages/EVGTeamPage';
 import { ProfileDropdown } from '@components/layout/ProfileDropdown';
+import { BottomNavigation } from '@components/layout/BottomNavigation';
 import { PlayerCardReveal } from '@components/auth/PlayerCardReveal';
 import { getAvatarUrl } from '@utils/avatarUtils';
 import { useFirstLogin } from '@hooks/useFirstLogin';
@@ -185,11 +186,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           {!user?.is_admin && (
             <div
               className="
-                flex justify-center
-                px-4 sm:px-0
-                pb-2 sm:pb-0
-                sm:absolute sm:top-1/2 sm:left-1/2
-                sm:-translate-x-1/2 sm:-translate-y-1/2
+                hidden md:flex justify-center
+                px-4 md:px-0
+                md:absolute md:top-1/2 md:left-1/2
+                md:-translate-x-1/2 md:-translate-y-1/2
               "
             >
               <div
@@ -204,7 +204,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               >
                 <NavItem to="/">Accueil</NavItem>
                 <NavItem to="/team">Team</NavItem>
-                <NavItem to="/leaderboard">Classement</NavItem>
                 <NavItem to="/challenges">Défis</NavItem>
                 <NavItem to="/packs">Packs</NavItem>
               </div>
@@ -214,9 +213,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       </nav>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 pb-20 md:pb-8">
         {children}
       </main>
+
+      {/* Bottom Navigation - Mobile only (non-admin) */}
+      {!user?.is_admin && <BottomNavigation />}
 
       {/* Footer */}
       <footer className="text-center py-8 text-gray-500 text-sm">
