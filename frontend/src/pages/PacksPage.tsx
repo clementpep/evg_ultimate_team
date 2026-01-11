@@ -83,29 +83,29 @@ export const PacksPage = () => {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Page Header */}
       <div className="mb-12 text-center">
-        <h1 className="font-display text-6xl font-black mb-4 uppercase tracking-wider text-gradient-psg">
+        <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-black mb-4 uppercase tracking-wider text-gradient-psg">
           MES PACKS
         </h1>
         <p className="text-text-secondary text-lg">
           Ouvre tes packs pour obtenir des récompenses exclusives !
         </p>
         {/* Display Credits and Points */}
-        <div className="mt-6 flex justify-center gap-6">
-          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border" style={{
+        <div className="mt-6 flex flex-col sm:flex-row justify-center items-center gap-3 sm:gap-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-3 rounded-xl border w-full sm:w-auto" style={{
             background: 'rgba(26, 41, 66, 0.6)',
             borderColor: 'rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(10px)',
           }}>
-            <span className="text-text-secondary text-sm uppercase tracking-wide">Crédits:</span>
-            <span className="font-numbers text-2xl font-bold text-fifa-gold">{userCredits}</span>
+            <span className="text-text-secondary text-xs sm:text-sm uppercase tracking-wide">Crédits:</span>
+            <span className="font-numbers text-xl sm:text-2xl font-bold text-fifa-gold">{userCredits}</span>
           </div>
-          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border" style={{
+          <div className="inline-flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-3 rounded-xl border w-full sm:w-auto" style={{
             background: 'rgba(26, 41, 66, 0.6)',
             borderColor: 'rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(10px)',
           }}>
-            <span className="text-text-secondary text-sm uppercase tracking-wide">Points:</span>
-            <span className="font-numbers text-2xl font-bold text-fifa-green">{userPoints}</span>
+            <span className="text-text-secondary text-xs sm:text-sm uppercase tracking-wide">Points:</span>
+            <span className="font-numbers text-xl sm:text-2xl font-bold text-fifa-green">{userPoints}</span>
           </div>
         </div>
       </div>
@@ -120,15 +120,15 @@ export const PacksPage = () => {
       {/* Pack Inventory Summary - Mobile First */}
       <div className="mb-8 md:mb-12 flex justify-center px-4">
         <div
-          className="grid grid-cols-2 sm:flex sm:flex-row gap-3 sm:gap-6 rounded-2xl p-4 sm:p-6 border w-full max-w-2xl sm:w-auto"
+          className="grid grid-cols-2 sm:flex sm:flex-row gap-3 sm:gap-6 rounded-2xl p-5 sm:p-6 border w-full max-w-2xl sm:w-auto"
           style={{
             background: 'rgba(26, 41, 66, 0.6)',
             borderColor: 'rgba(255, 255, 255, 0.1)',
             backdropFilter: 'blur(10px)',
           }}
         >
-          <div className="text-center px-2 sm:px-4">
-            <div className="font-numbers text-2xl sm:text-4xl font-black text-fifa-bronze mb-1 sm:mb-2">
+          <div className="text-center px-3 sm:px-4">
+            <div className="font-numbers text-3xl sm:text-4xl font-black text-fifa-bronze mb-1 sm:mb-2">
               {inventory?.bronze || 0}
             </div>
             <div className="text-text-secondary text-xs sm:text-sm uppercase tracking-wide">
@@ -138,8 +138,8 @@ export const PacksPage = () => {
 
           <div className="hidden sm:block w-px bg-white/10"></div>
 
-          <div className="text-center px-2 sm:px-4">
-            <div className="font-numbers text-2xl sm:text-4xl font-black text-fifa-silver mb-1 sm:mb-2">
+          <div className="text-center px-3 sm:px-4">
+            <div className="font-numbers text-3xl sm:text-4xl font-black text-fifa-silver mb-1 sm:mb-2">
               {inventory?.silver || 0}
             </div>
             <div className="text-text-secondary text-xs sm:text-sm uppercase tracking-wide">
@@ -149,8 +149,8 @@ export const PacksPage = () => {
 
           <div className="hidden sm:block w-px bg-white/10"></div>
 
-          <div className="text-center px-2 sm:px-4">
-            <div className="font-numbers text-2xl sm:text-4xl font-black text-fifa-gold mb-1 sm:mb-2">
+          <div className="text-center px-3 sm:px-4">
+            <div className="font-numbers text-3xl sm:text-4xl font-black text-fifa-gold mb-1 sm:mb-2">
               {inventory?.gold || 0}
             </div>
             <div className="text-text-secondary text-xs sm:text-sm uppercase tracking-wide">
@@ -160,8 +160,8 @@ export const PacksPage = () => {
 
           <div className="hidden sm:block w-px bg-white/10"></div>
 
-          <div className="text-center px-2 sm:px-4">
-            <div className="font-numbers text-2xl sm:text-4xl font-black text-psg-red mb-1 sm:mb-2">
+          <div className="text-center px-3 sm:px-4">
+            <div className="font-numbers text-3xl sm:text-4xl font-black text-psg-red mb-1 sm:mb-2">
               {inventory?.ultimate || 0}
             </div>
             <div className="text-text-secondary text-xs sm:text-sm uppercase tracking-wide">
