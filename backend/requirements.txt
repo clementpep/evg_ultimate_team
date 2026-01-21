@@ -15,7 +15,7 @@ python-multipart==0.0.6    # Required for form data and file uploads
 sqlalchemy==2.0.23         # SQL toolkit and Object-Relational Mapping
 alembic==1.12.1            # Database migration tool for SQLAlchemy
 aiosqlite==0.19.0          # Async SQLite support for SQLAlchemy
-mysql-connector-python
+mysql-connector-python>=8.0
 
 
 # -----------------------------------------------------------------------------
