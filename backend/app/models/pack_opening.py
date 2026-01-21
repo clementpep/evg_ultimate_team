@@ -29,7 +29,7 @@ class PackOpening(Base):
     reward_id = Column(Integer, ForeignKey("pack_rewards.id"), nullable=False)
 
     # Pack details
-    pack_tier = Column(String, nullable=False, index=True)  # bronze/silver/gold/ultimate
+    pack_tier = Column(String(20), nullable=False, index=True)  # bronze/silver/gold/ultimate
     points_spent = Column(Integer, default=0, nullable=False)  # 0 if free pack
 
     # Timestamp

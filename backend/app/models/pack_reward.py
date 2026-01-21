@@ -24,11 +24,11 @@ class PackReward(Base):
     id = Column(Integer, primary_key=True, index=True)
 
     # Reward details
-    tier = Column(String, nullable=False, index=True)  # bronze/silver/gold/ultimate
-    reward_name = Column(String, nullable=False)
-    reward_description = Column(String, nullable=False)
-    reward_type = Column(String, nullable=False)  # shot/immunity/power/wildcard
-    rarity = Column(String, nullable=False, index=True)  # common/rare/epic/legendary
+    tier = Column(String(20), nullable=False, index=True)  # bronze/silver/gold/ultimate
+    reward_name = Column(String(200), nullable=False)
+    reward_description = Column(String(500), nullable=False)
+    reward_type = Column(String(50), nullable=False)  # shot/immunity/power/wildcard
+    rarity = Column(String(20), nullable=False, index=True)  # common/rare/epic/legendary
 
     # Status
     is_active = Column(Boolean, default=True, nullable=False)
