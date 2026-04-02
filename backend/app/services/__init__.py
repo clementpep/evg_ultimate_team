@@ -9,6 +9,8 @@ from app.services import participant_service
 from app.services import challenge_service
 from app.services import points_service
 from app.services import leaderboard_service
+from app.services import pack_service
+from app.services import experience_service
 
 __all__ = [
     "auth_service",
@@ -16,4 +18,6 @@ __all__ = [
     "challenge_service",
     "points_service",
     "leaderboard_service",
+    "pack_service",
+    "experience_service",
 ]

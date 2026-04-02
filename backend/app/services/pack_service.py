@@ -187,7 +187,7 @@ def select_random_reward(db: Session, tier: str) -> PackReward:
         >>> reward = select_random_reward(db, "bronze")
         >>> print(reward.reward_name, reward.rarity)
     """
-    # Get rarity weights for this tier
+    # Get static rarity weights for this tier
     weights = RARITY_WEIGHTS.get(tier, {"common": 100})
 
     # Select rarity based on weights
@@ -212,6 +212,84 @@ def select_random_reward(db: Session, tier: str) -> PackReward:
             raise ValueError(f"No rewards available for tier: {tier}")
 
     # Select random reward from filtered list
+    return random.choice(rewards)
+
+
+def compute_dynamic_rarity_weights(
+    db: Session,
+    participant_id: int,
+    tier: str,
+    now: Optional[datetime] = None
+) -> dict[str, float]:
+    """
+    Compute contextual rarity weights for better replayability.
+
+    Adjustments:
+    - Night boost for epic/legendary
+    - Event progression boost (during EVG weekend)
+    - Bad-luck protection after a streak of low rarity pulls
+    """
+    base = dict(RARITY_WEIGHTS.get(tier, {"common": 100}))
+    if not base:
+        return {"common": 100.0}
+
+    current_time = now or datetime.utcnow()
+    hour = current_time.hour
+
+    # Night sessions feel more rewarding
+    if hour >= 22 or hour < 3:
+        if "legendary" in base:
+            base["legendary"] *= 1.20
+        if "epic" in base:
+            base["epic"] *= 1.10
+
+    # EVG progression boost around July 3-5, 2026
+    evg_start = datetime(2026, 7, 3, 9, 0, 0)
+    evg_end = datetime(2026, 7, 5, 12, 0, 0)
+    if evg_start <= current_time <= evg_end:
+        progress = (current_time - evg_start).total_seconds() / (evg_end - evg_start).total_seconds()
+        if progress > 0.6:
+            if "epic" in base:
+                base["epic"] *= 1.15
+            if "legendary" in base:
+                base["legendary"] *= 1.25
+
+    # Pity-like protection
+    recent = db.query(PackOpening).filter(
+        PackOpening.participant_id == participant_id
+    ).order_by(PackOpening.opened_at.desc()).limit(5).all()
+    low_rarity_streak = 0
+    for opening in recent:
+        rarity = opening.reward.rarity if opening.reward else "common"
+        if rarity in {"common", "rare"}:
+            low_rarity_streak += 1
+        else:
+            break
+    if low_rarity_streak >= 3:
+        if "epic" in base:
+            base["epic"] *= 1.20
+        if "legendary" in base:
+            base["legendary"] *= 1.20
+
+    total = sum(base.values()) or 1.0
+    return {rarity: value / total * 100 for rarity, value in base.items()}
+
+
+def select_random_reward_for_participant(db: Session, participant_id: int, tier: str) -> PackReward:
+    """Select reward using dynamic participant-aware rarity weights."""
+    weights = compute_dynamic_rarity_weights(db, participant_id, tier)
+    rarities = list(weights.keys())
+    probabilities = list(weights.values())
+    selected_rarity = random.choices(rarities, weights=probabilities, k=1)[0]
+    rewards = db.query(PackReward).filter(
+        and_(
+            PackReward.tier == tier,
+            PackReward.rarity == selected_rarity,
+            PackReward.is_active == True
+        )
+    ).all()
+    if not rewards:
+        return select_random_reward(db, tier)
     return random.choice(rewards)
 
 
@@ -256,7 +334,7 @@ def open_pack(db: Session, participant_id: int, tier: str) -> PackOpenResponse:
     participant = db.query(Participant).filter(Participant.id == participant_id).first()
 
     # Select random reward
-    reward = select_random_reward(db, tier)
+    reward = select_random_reward_for_participant(db, participant_id, tier)
 
     logger.info(f"Selected reward: {reward.reward_name} (rarity: {reward.rarity}) for participant {participant_id}")
 

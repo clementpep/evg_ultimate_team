@@ -13,14 +13,16 @@ from app.schemas.challenge import (
     ChallengeCreate,
     ChallengeUpdate,
     ChallengeAttempt,
-    ChallengeValidation
+    ChallengeValidation,
+    ChallengeGenerationRequest
 )
 from app.schemas.common import APIResponse, SuccessResponse
-from app.services import challenge_service, points_service
-from app.utils.dependencies import require_admin, get_current_user_payload, get_admin_id
+from app.services import challenge_service, points_service, experience_service
+from app.utils.dependencies import get_current_user_payload, get_admin_id
 from app.utils.exceptions import EVGException, format_exception_response
 from app.utils.logger import logger
-from app.models.challenge import ChallengeStatus
+from app.models import Challenge, Participant, ChallengeStatus
+from datetime import datetime
 
 router = APIRouter(prefix="/challenges", tags=["Challenges"])
 
@@ -243,7 +245,7 @@ def validate_challenge(
     challenge_id: int,
     validation_data: ChallengeValidation,
     db: Session = Depends(get_db),
-    admin = Depends(require_admin)
+    admin_id: int = Depends(get_admin_id)
 ):
     """
     Validate challenge completion (admin only).
@@ -268,7 +270,8 @@ def validate_challenge(
         challenge = challenge_service.validate_challenge_completion(
             db,
             challenge_id,
-            validation_data
+            validation_data,
+            admin_id
         )
 
         # If completed, award points to participants
@@ -278,7 +281,7 @@ def validate_challenge(
                     db,
                     participant_id,
                     challenge_id,
-                    validation_data.admin_id
+                    admin_id
                 )
 
         return APIResponse(
@@ -289,6 +292,68 @@ def validate_challenge(
     except EVGException as e:
         logger.error(f"Failed to validate challenge {challenge_id}: {e.message}")
         raise HTTPException(status_code=e.status_code, detail=format_exception_response(e))
+
+
+@router.post("/generate/contextual", response_model=APIResponse[dict])
+def generate_contextual_challenges(
+    payload: ChallengeGenerationRequest,
+    db: Session = Depends(get_db),
+    admin_id: int = Depends(get_admin_id)
+):
+    """Generate EVG contextual challenges based on time and event progression."""
+    try:
+        participants = db.query(Participant).order_by(Participant.id.asc()).all()
+        participant_names = [p.name for p in participants]
+        if not participant_names:
+            raise HTTPException(status_code=400, detail="No participants found")
+
+        completed_count = db.query(Challenge).filter(
+            Challenge.status == ChallengeStatus.COMPLETED
+        ).count()
+        now = payload.reference_time or datetime.utcnow()
+        generated = experience_service.generate_dynamic_challenges(
+            participant_names=participant_names,
+            now=now,
+            completed_challenges_count=completed_count,
+            count=payload.count,
+            seed=payload.seed,
+        )
+
+        persisted_challenges = []
+        if payload.persist:
+            for challenge_data in generated:
+                challenge = Challenge(**experience_service.to_challenge_model_kwargs(challenge_data))
+                db.add(challenge)
+                persisted_challenges.append(challenge)
+            db.commit()
+            for challenge in persisted_challenges:
+                db.refresh(challenge)
+
+        serialized = (
+            [_serialize_challenge(challenge) for challenge in persisted_challenges]
+            if payload.persist
+            else [challenge.model_dump() for challenge in generated]
+        )
+
+        logger.info(
+            "Generated contextual challenges",
+            extra={"admin_id": admin_id, "count": len(serialized), "persist": payload.persist}
+        )
+        return APIResponse(
+            success=True,
+            data={
+                "generated_count": len(serialized),
+                "persisted": payload.persist,
+                "reference_time": now.isoformat(),
+                "challenges": serialized,
+            },
+            message="Contextual EVG challenges generated successfully"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to generate contextual challenges: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to generate contextual challenges")
 
 
 @router.get("/participant/{participant_id}", response_model=APIResponse[dict])
