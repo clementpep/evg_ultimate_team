@@ -161,7 +161,8 @@ def mark_challenge_active(db: Session, challenge_id: int, participant_id: int) -
 def validate_challenge_completion(
     db: Session,
     challenge_id: int,
-    validation_data: ChallengeValidation
+    validation_data: ChallengeValidation,
+    admin_id: int
 ) -> Challenge:
     """
     Validate challenge completion and award points.
@@ -176,7 +177,7 @@ def validate_challenge_completion(
 
     # Update challenge status
     challenge.status = validation_data.status
-    challenge.validated_by = validation_data.admin_id
+    challenge.validated_by = admin_id
 
     if validation_data.status == ChallengeStatus.COMPLETED:
         challenge.completed_at = datetime.utcnow()
@@ -194,7 +195,7 @@ def validate_challenge_completion(
     log_challenge_validation(
         challenge_id=challenge_id,
         participant_ids=validation_data.participant_ids,
-        validated_by=validation_data.admin_id,
+        validated_by=admin_id,
         status=validation_data.status.value
     )
 

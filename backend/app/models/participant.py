@@ -167,6 +167,25 @@ class Participant(Base):
             raise ValueError(f"Insufficient credits. Need {amount}, have {self.pack_credits}")
         self.pack_credits -= amount
 
+    def subtract_points(self, amount: int) -> None:
+        """
+        Subtract points from the participant's total.
+
+        This method is used for admin penalties and keeps behavior explicit
+        for leaderboard updates.
+
+        Args:
+            amount: Points to subtract (positive integer)
+
+        Raises:
+            ValueError: If amount is negative or participant has insufficient points
+        """
+        if amount < 0:
+            raise ValueError("Cannot subtract negative points.")
+        if self.total_points < amount:
+            raise ValueError(f"Insufficient points. Need {amount}, have {self.total_points}")
+        self.total_points -= amount
+
     def add_pack(self, pack_tier: str) -> None:
         """
         Add a pack to the participant's inventory.
