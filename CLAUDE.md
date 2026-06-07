@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-**EVG ULTIMATE TEAM** is a gamification web application for Paul C's bachelor party (June 4-6, 2026). The app tracks points, challenges, and pack openings throughout a 3-day event (Friday evening to Sunday afternoon) with 13 participants.
+**EVG ULTIMATE TEAM** is a gamification web application for Paul C's bachelor party (July 3-5, 2026, in Marseille). The app tracks points, challenges, and pack openings throughout a 3-day event (Friday evening to Sunday afternoon) with 13 participants.
 
 The app is themed around FIFA Ultimate Team mechanics combined with Paris Saint-Germain (PSG) branding, as Paul is a PSG fan and loves FUT on console/mobile.
 
@@ -524,7 +524,7 @@ The app is themed around FIFA Ultimate Team mechanics combined with Paris Saint-
 - Deploy backend on a reliable host (Heroku, Railway, Render)
 - Deploy frontend on Vercel or Netlify
 - Ensure stable WebSocket connection
-- Test thoroughly before June 4, 2026
+- Test thoroughly before July 3, 2026
 
 ## Additional Notes
 

@@ -6,9 +6,15 @@ Uses Pydantic Settings for type-safe configuration with validation.
 """
 
 from pydantic_settings import BaseSettings
-from pydantic import Field
+from pydantic import Field, model_validator
 from typing import List
 from functools import lru_cache
+
+
+# Insecure defaults kept for local development convenience. They are rejected at
+# startup when ENVIRONMENT=production (see _enforce_secure_production_secrets).
+_DEFAULT_SECRET_KEY = "change-this-to-a-random-secret-key-in-production"
+_DEFAULT_ADMIN_PASSWORD = "evg2026_admin"
 
 
 class Settings(BaseSettings):
@@ -31,7 +37,7 @@ class Settings(BaseSettings):
     # Security Configuration
     # ==========================================================================
     secret_key: str = Field(
-        default="change-this-to-a-random-secret-key-in-production",
+        default=_DEFAULT_SECRET_KEY,
         description="Secret key for session management and token generation"
     )
 
@@ -41,7 +47,7 @@ class Settings(BaseSettings):
     )
 
     admin_password: str = Field(
-        default="evg2026_admin",
+        default=_DEFAULT_ADMIN_PASSWORD,
         description="Admin password"
     )
 
@@ -52,6 +58,28 @@ class Settings(BaseSettings):
         default="http://localhost:5173,http://localhost:3000",
         description="Comma-separated list of allowed CORS origins (use '*' for all)"
     )
+
+    @model_validator(mode="after")
+    def _enforce_secure_production_secrets(self) -> "Settings":
+        """
+        Reject insecure default secrets when running in production.
+
+        Development keeps the convenient defaults so the app runs without a .env,
+        but production must override SECRET_KEY and ADMIN_PASSWORD via environment
+        variables, otherwise the app refuses to start.
+        """
+        if self.environment.strip().lower() == "production":
+            insecure = []
+            if self.secret_key == _DEFAULT_SECRET_KEY:
+                insecure.append("SECRET_KEY")
+            if self.admin_password == _DEFAULT_ADMIN_PASSWORD:
+                insecure.append("ADMIN_PASSWORD")
+            if insecure:
+                raise ValueError(
+                    f"Insecure default value(s) for {', '.join(insecure)} must be "
+                    "overridden via environment variables when ENVIRONMENT=production."
+                )
+        return self
 
     @property
     def cors_origins_list(self) -> List[str]:

@@ -11,7 +11,7 @@ license: mit
 # 🏆 EVG ULTIMATE TEAM
 
 **Gamification Web Application for Paul's Bachelor Party**
-*June 4-6, 2026 | Paris Saint-Germain × FIFA Ultimate Team Theme*
+*July 3-5, 2026 | Paris Saint-Germain × FIFA Ultimate Team Theme*
 
 A complete full-stack web application for tracking points, challenges, and pack openings during a 3-day bachelor party event with 13 participants.
 
@@ -20,7 +20,7 @@ A complete full-stack web application for tracking points, challenges, and pack 
 EVG Ultimate Team brings FIFA Ultimate Team mechanics to real life, themed with Paris Saint-Germain branding for Paul (the groom) who's a massive PSG fan and FUT enthusiast.
 
 **Event Details:**
-- **Dates**: June 4-6, 2026 (Friday evening → Sunday afternoon)
+- **Dates**: July 3-5, 2026 (Friday evening → Sunday afternoon)
 - **Participants**: 13 friends including Paul (the groom)
 - **Organizer**: Clément P. (admin with full control)
 - **Theme**: PSG colors + FIFA Ultimate Team mechanics

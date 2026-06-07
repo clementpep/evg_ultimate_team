@@ -268,5 +268,5 @@ VITE_DEBUG=false
 
 ---
 
-**Built for Paul's Bachelor Party (June 4-6, 2026)**
+**Built for Paul's Bachelor Party (July 3-5, 2026)**
 *PSG colors, FIFA vibes, legendary times!* 🏆⚽🎮
