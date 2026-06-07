@@ -4,7 +4,7 @@ Main FastAPI application for EVG Ultimate Team.
 This is the entry point for the backend API.
 """
 
-from fastapi import FastAPI, Request, status, Depends, WebSocket
+from fastapi import FastAPI, Request, status, Depends, WebSocket, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
@@ -20,7 +20,8 @@ from app.routes import (
     points_router,
     leaderboard_router,
     packs_router,
-    admin_router
+    admin_router,
+    team_router
 )
 from app.websocket.leaderboard import leaderboard_websocket_endpoint
 from app.tasks import start_scheduler, shutdown_scheduler
@@ -162,6 +163,7 @@ app.include_router(points_router, prefix="/api")
 app.include_router(leaderboard_router, prefix="/api")
 app.include_router(packs_router, prefix="/api")
 app.include_router(admin_router, prefix="/api")
+app.include_router(team_router, prefix="/api")
 
 
 # =============================================================================
@@ -249,8 +251,10 @@ async def debug_images():
     Debug endpoint to list all PNG files and their sizes.
 
     Helps diagnose LFS pointer files vs real images.
+    Only available when debug mode is enabled (disabled in production).
     """
-    import os
+    if not settings.debug:
+        raise HTTPException(status_code=404, detail="Not found")
 
     images_info = []
 

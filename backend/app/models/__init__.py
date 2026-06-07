@@ -15,6 +15,7 @@ from app.models.challenge import (
 from app.models.points_transaction import PointsTransaction
 from app.models.pack_reward import PackReward
 from app.models.pack_opening import PackOpening
+from app.models.team_composition import TeamComposition
 
 __all__ = [
     # Models
@@ -23,6 +24,7 @@ __all__ = [
     "PointsTransaction",
     "PackReward",
     "PackOpening",
+    "TeamComposition",
     # Enums
     "ChallengeType",
     "ChallengeStatus",

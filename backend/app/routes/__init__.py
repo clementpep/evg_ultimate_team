@@ -11,6 +11,7 @@ from app.routes.points import router as points_router
 from app.routes.leaderboard import router as leaderboard_router
 from app.routes.packs import router as packs_router
 from app.routes.admin import router as admin_router
+from app.routes.team import router as team_router
 
 __all__ = [
     "auth_router",
@@ -20,4 +21,5 @@ __all__ = [
     "leaderboard_router",
     "packs_router",
     "admin_router",
+    "team_router",
 ]

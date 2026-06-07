@@ -46,3 +46,57 @@
 - **Deps** : bump Python 3.14, `requirements.txt` figé et vérifié.
 - **Tests** : 7/7 verts. `.venv` opérationnel sous `backend/.venv`.
 - **Reste Phase 1** : rate-limiting auth (optionnel). Ensuite Phase 2 (perf N+1) ou Phase 3 (Event Cards).
+
+---
+
+# PLAN — Découverte d'équipe (Paul) + Terrain 5v5 (à valider avant code)
+
+> Décidé avec Clément (2026-06-07) :
+> 1. Découverte = **1 pack "Équipe"** révélant les **12 autres cartes** une par une, **Paul uniquement**.
+> 2. Terrain **5v5** = **2×5 titulaires + banc de 3** ; compo **sauvée en base et visible par tous**.
+> 3. Quelques optimisations ciblées en commits séparés.
+> Branche dédiée : `feat/squad-discovery-and-five`.
+
+## Hypothèses (corrige-moi si besoin)
+- La compo est éditable par **Paul (groom) OU l'admin (Clément)** ; lecture seule pour les autres.
+- Placement par **tap-to-place** (sélectionner un joueur → taper un emplacement), pas de drag&drop → robuste mobile, **zéro nouvelle dépendance**.
+- Tant qu'aucune compo n'est créée, la page Team garde l'**affichage escouade actuel** en fallback.
+- Positions sur le terrain = **décoratives** (GK + 1-2-1), pas de rôle imposé. Noms d'équipe par défaut « Les Bleus » / « Les Rouges », éditables.
+- Découverte = expérience **front uniquement**, gated localStorage (comme le reveal actuel), **rejouable** depuis le profil. Aucune carte/donnée nouvelle côté serveur.
+
+## Lot A — Backend : compo d'équipe persistée ✅
+- [x] `models/team_composition.py` : table mono-ligne (id=1) `team_a_name, team_b_name, team_a[json], team_b[json], bench[json], updated_at, updated_by`. Enregistrée dans `models/__init__.py` (create_all crée la table — vérifié : présente dans `Base.metadata.tables`).
+- [x] `schemas/team.py` : `TeamCompositionUpdate` + `TeamCompositionResponse` (équipes résolues + `unplaced` + `updated_at`).
+- [x] `services/team_service.py` : `get_composition` / `update_composition` avec validations (ids valides, unicité A/B/banc, ≤5/≤5/≤3 ; compos partielles OK).
+- [x] `utils/dependencies.py` : `require_groom_or_admin`.
+- [x] `routes/team.py` : `GET` (auth) + `PUT` (guard) ; router monté dans `main.py` + exports `routes/__init__.py` & `services/__init__.py`.
+
+## Lot B — Frontend : page Terrain (vue + édition) ✅
+- [x] `types/team.ts` + `services/teamService.ts` (`getTeamComposition`, `updateTeamComposition`).
+- [x] `components/team/PlayerChip.tsx` (carte FUT compacte réutilisable, état sélectionné).
+- [x] `components/team/FivePitch.tsx` : terrain (A haut / B bas, 5 slots), banc (3), zone non-répartis ; tap-to-place via zones/slots.
+- [x] `pages/EVGTeamPage.tsx` : vue/édition, toggle « Composer » (groom/admin), noms d'équipe éditables, modale carte ; auto-edit via `?edit` (guard `useRef` anti-rebond après save).
+
+## Lot C — Frontend : découverte d'équipe de Paul ✅
+- [x] `hooks/useSquadDiscovery.ts` : flag `evg_has_discovered_squad_{id}` (actif si `is_groom`).
+- [x] `components/team/SquadDiscovery.tsx` : Pack Équipe → révélation séquentielle des 12 (compteur n/12, tap), CTA « Compose ton équipe → » vers `/team?edit`.
+- [x] `App.tsx` : groom → `SquadDiscovery` (au lieu du reveal perso) au 1er login ; rejouable via `CardRevealContext`.
+
+## Lot D — Optimisations ciblées ✅ (incluses) / ⏸ (reporté)
+- [x] **(inclus)** `datetime.utcnow()` → `datetime.now(timezone.utc)` dans `pack_service.py` (+ normalisation UTC→naïf pour la fenêtre EVG).
+- [x] **(inclus)** `/debug/images` bridé derrière `settings.debug` (404 sinon).
+- [ ] **⏸ reporté** Leaderboard N+1 (laissé de côté pour rester chirurgical, dispo plus tard).
+
+## Vérification ✅
+- [x] Backend : `pytest` **19/19 vert** (7 existants + 7 `test_team_service` + 5 `test_team_routes` via TestClient/StaticPool, guard groom/admin testé).
+- [x] Front : `tsc --noEmit` OK + `npm run build` OK.
+- [x] Table `team_composition` confirmée enregistrée pour `create_all`.
+- [ ] **Manuel (à faire par Clément)** : login Paul → découverte 12 cartes → compose 2×5 + banc → recharge en tant qu'autre joueur → compo visible.
+
+### Session 2026-06-07 — Découverte d'équipe + Five 5v5
+- **Branche** : `feat/squad-discovery-and-five`.
+- **Backend** : table `team_composition` (mono-ligne), service+validations, endpoints `GET/PUT /api/team/composition`, guard `require_groom_or_admin`. Pas de migration manuelle (create_all).
+- **Frontend** : page `LE FIVE` (terrain A/B + banc + non-répartis) en vue + édition tap-to-place (Paul/admin) ; découverte « Pack Équipe » des 12 autres pour Paul au 1er login (rejouable).
+- **Optims** : `datetime` aware dans `pack_service` ; `/debug/images` masqué hors debug.
+- **Tests** : 19/19 (ajout `test_team_service` + `test_team_routes`). `httpx` installé dans `.venv` (déjà listé en dépendance de test commentée dans `requirements.txt`).
+- **Reste** : test manuel e2e ; éventuellement broadcast WS de la compo (live) et N+1 leaderboard si besoin.
