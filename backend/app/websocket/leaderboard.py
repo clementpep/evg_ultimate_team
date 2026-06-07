@@ -46,14 +46,11 @@ async def leaderboard_websocket_endpoint(
     }
     ```
     """
-    # Accept the WebSocket connection first
-    await websocket.accept()
-
-    # Extract token from query parameters
+    # Authenticate BEFORE accepting the handshake so unauthenticated clients
+    # never reach an accepted-connection state.
     query_params = dict(websocket.query_params)
     token = query_params.get("token")
 
-    # Verify authentication token
     if not token:
         await websocket.close(code=1008, reason="Missing authentication token")
         logger.warning("WebSocket connection rejected: missing token")
@@ -61,11 +58,14 @@ async def leaderboard_websocket_endpoint(
 
     try:
         payload = verify_token(token)
-        logger.info(f"WebSocket authenticated: user_id={payload.get('user_id')}, is_admin={payload.get('is_admin')}")
     except Exception as e:
         await websocket.close(code=1008, reason="Invalid authentication token")
         logger.warning(f"WebSocket connection rejected: invalid token - {str(e)}")
         return
+
+    # Token is valid: accept the connection.
+    await websocket.accept()
+    logger.info(f"WebSocket authenticated: user_id={payload.get('user_id')}, is_admin={payload.get('is_admin')}")
 
     # Register the connection with the manager
     manager.active_connections.setdefault("leaderboard", []).append(websocket)
