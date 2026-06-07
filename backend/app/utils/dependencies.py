@@ -144,6 +144,37 @@ def require_admin(
     return payload
 
 
+def require_groom_or_admin(
+    payload: dict = Depends(get_current_user_payload)
+) -> dict:
+    """
+    Require that the current user is the groom (Paul) or an admin.
+
+    Used to protect editing the shared 5v5 lineup, which the groom builds
+    and the admin can also adjust.
+
+    Args:
+        payload: Decoded JWT token payload
+
+    Returns:
+        Token payload if user is groom or admin
+
+    Raises:
+        HTTPException: If user is neither groom nor admin
+    """
+    if is_admin_token(payload) or payload.get("is_groom", False):
+        return payload
+
+    logger.warning(
+        f"Non-groom/non-admin attempted to edit team composition",
+        extra={"user_id": payload.get("user_id")}
+    )
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail="Seul le marié ou l'admin peut modifier la composition"
+    )
+
+
 def get_optional_current_user(
     credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)
 ) -> Optional[dict]:

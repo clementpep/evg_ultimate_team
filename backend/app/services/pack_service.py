@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from typing import Optional, Tuple
 import random
-from datetime import datetime
+from datetime import datetime, timezone
 
 from app.models.participant import Participant
 from app.models.pack_reward import PackReward
@@ -233,7 +233,11 @@ def compute_dynamic_rarity_weights(
     if not base:
         return {"common": 100.0}
 
-    current_time = now or datetime.utcnow()
+    current_time = now or datetime.now(timezone.utc)
+    # Normalize to naive UTC so comparisons with the naive EVG window below
+    # work whether the caller passed an aware or naive datetime.
+    if current_time.tzinfo is not None:
+        current_time = current_time.astimezone(timezone.utc).replace(tzinfo=None)
     hour = current_time.hour
 
     # Night sessions feel more rewarding
@@ -347,7 +351,7 @@ def open_pack(db: Session, participant_id: int, tier: str) -> PackOpenResponse:
         reward_id=reward.id,
         pack_tier=tier,
         points_spent=0,  # Free pack (points not deducted)
-        opened_at=datetime.utcnow()
+        opened_at=datetime.now(timezone.utc)
     )
     db.add(pack_opening)
 

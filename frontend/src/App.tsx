@@ -13,15 +13,22 @@ import { EVGTeamPage } from '@pages/EVGTeamPage';
 import { ProfileDropdown } from '@components/layout/ProfileDropdown';
 import { BottomNavigation } from '@components/layout/BottomNavigation';
 import { PlayerCardReveal } from '@components/auth/PlayerCardReveal';
+import { SquadDiscovery } from '@components/team/SquadDiscovery';
 import { getAvatarUrl } from '@utils/avatarUtils';
 import { useFirstLogin } from '@hooks/useFirstLogin';
+import { useSquadDiscovery } from '@hooks/useSquadDiscovery';
 
 // Protected Route Component
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading, user } = useAuth();
-  const { shouldShowReveal, markAsRevealed } = useFirstLogin(user?.id);
+  const isGroom = !!user?.is_groom;
+  // Non-groom participants reveal their own card; the groom (Paul) discovers
+  // the whole squad instead, so each path is gated by its own user id.
+  const { shouldShowReveal, markAsRevealed } = useFirstLogin(isGroom ? undefined : user?.id);
+  const { shouldShowDiscovery, markDiscovered } = useSquadDiscovery(isGroom ? user?.id : undefined);
   const { shouldTriggerReveal, resetReveal } = useCardReveal();
   const [showReveal, setShowReveal] = useState(false);
+  const [showDiscovery, setShowDiscovery] = useState(false);
 
   // Check for reset query parameter to clear first-login localStorage
   useEffect(() => {
@@ -37,24 +44,44 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   // Trigger card reveal animation immediately after authentication (first login)
   useEffect(() => {
-    if (isAuthenticated && shouldShowReveal && !isLoading && user && !user.is_admin) {
+    if (isAuthenticated && shouldShowReveal && !isLoading && user && !user.is_admin && !isGroom) {
       // Small delay to let auth settle
       setTimeout(() => setShowReveal(true), 300);
     }
-  }, [isAuthenticated, shouldShowReveal, isLoading, user]);
+  }, [isAuthenticated, shouldShowReveal, isLoading, user, isGroom]);
 
-  // Trigger card reveal animation on demand (replay from profile)
+  // Trigger squad discovery for the groom on first login
+  useEffect(() => {
+    if (isAuthenticated && shouldShowDiscovery && !isLoading && user && isGroom) {
+      setTimeout(() => setShowDiscovery(true), 300);
+    }
+  }, [isAuthenticated, shouldShowDiscovery, isLoading, user, isGroom]);
+
+  // Trigger animation on demand (replay from profile) — discovery for the groom,
+  // own-card reveal for everyone else.
   useEffect(() => {
     if (shouldTriggerReveal && isAuthenticated && user && !user.is_admin) {
-      setShowReveal(true);
+      if (isGroom) {
+        setShowDiscovery(true);
+      } else {
+        setShowReveal(true);
+      }
     }
-  }, [shouldTriggerReveal, isAuthenticated, user]);
+  }, [shouldTriggerReveal, isAuthenticated, user, isGroom]);
 
   const handleRevealComplete = () => {
     if (shouldShowReveal) {
       markAsRevealed(); // Only mark as revealed if it was the first login
     }
     setShowReveal(false);
+    resetReveal(); // Reset the manual trigger
+  };
+
+  const handleDiscoveryComplete = () => {
+    if (shouldShowDiscovery) {
+      markDiscovered(); // Only persist on first login
+    }
+    setShowDiscovery(false);
     resetReveal(); // Reset the manual trigger
   };
 
@@ -72,8 +99,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   return (
     <>
-      {/* First-login card reveal animation (non-admins only) */}
-      {showReveal && user && !user.is_admin && (
+      {/* First-login own-card reveal (non-admin, non-groom) */}
+      {showReveal && user && !user.is_admin && !isGroom && (
         <PlayerCardReveal
           isOpen={showReveal}
           username={user.username}
@@ -81,6 +108,10 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
           isReplay={shouldTriggerReveal}
           onComplete={handleRevealComplete}
         />
+      )}
+      {/* First-login squad discovery (groom only) */}
+      {showDiscovery && user && isGroom && (
+        <SquadDiscovery currentUserId={user.id} onComplete={handleDiscoveryComplete} />
       )}
       {children}
     </>
