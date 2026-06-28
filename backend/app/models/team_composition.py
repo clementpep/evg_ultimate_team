@@ -31,6 +31,7 @@ class TeamComposition(Base):
     team_a = Column(JSON, default=list, nullable=False)
     team_b = Column(JSON, default=list, nullable=False)
     bench = Column(JSON, default=list, nullable=False)
+    referee = Column(JSON, default=list, nullable=False)  # at most 1 participant id
 
     updated_at = Column(
         DateTime(timezone=True),
@@ -43,5 +44,6 @@ class TeamComposition(Base):
     def __repr__(self) -> str:
         return (
             f"<TeamComposition(a={len(self.team_a or [])}, "
-            f"b={len(self.team_b or [])}, bench={len(self.bench or [])})>"
+            f"b={len(self.team_b or [])}, bench={len(self.bench or [])}, "
+            f"referee={len(self.referee or [])})>"
         )
