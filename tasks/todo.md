@@ -93,6 +93,33 @@
 - [x] Table `team_composition` confirmée enregistrée pour `create_all`.
 - [ ] **Manuel (à faire par Clément)** : login Paul → découverte 12 cartes → compose 2×5 + banc → recharge en tant qu'autre joueur → compo visible.
 
+# PLAN — Simplification packs + nettoyage perf + arbitre 5v5 (2026-06-28)
+
+> Spec : `docs/superpowers/specs/2026-06-28-pack-simplification-and-referee-design.md`
+> Branche : `feat/pack-simplification-and-referee`. DB resettable.
+
+## Chantier A — Simplification & perf
+- [ ] A1. Supprimer `experience_service.py` + route `/challenges/generate/contextual` + export + tests liés
+- [ ] A2. `open_pack` → `select_random_reward` ; supprimer rareté dynamique + tests adaptés
+- [ ] A3. `PackOpeningModal` : confettis ~24-30, retirer boucles `Infinity` superflues
+- [ ] Commit A
+
+## Chantier B — Refonte packs
+- [ ] B1. Réécrire les 24 récompenses (FR) dans `seed.py`, rarités alignées sur `RARITY_WEIGHTS`
+- [ ] B2. Script `seed_pack_rewards.py` : purge + reseed ; documenter reset VPS
+- [ ] Commit B
+
+## Chantier C — Arbitre 5v5
+- [ ] C1. Backend : colonne `referee` + schéma + validations service
+- [ ] C2. Front : zone Arbitre dans `FivePitch` + câblage `EVGTeamPage` + types
+- [ ] Commit C
+
+## Vérification finale
+- [ ] `pytest` vert · `tsc --noEmit` + `npm run build` OK
+- [ ] Test manuel Clément (reset DB + compo arbitre)
+
+---
+
 ### Session 2026-06-07 — Découverte d'équipe + Five 5v5
 - **Branche** : `feat/squad-discovery-and-five`.
 - **Backend** : table `team_composition` (mono-ligne), service+validations, endpoints `GET/PUT /api/team/composition`, guard `require_groom_or_admin`. Pas de migration manuelle (create_all).
