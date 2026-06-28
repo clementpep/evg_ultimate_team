@@ -19,7 +19,7 @@ export const LeaderboardPage: React.FC = () => {
     },
   });
 
-  if (isLoading) return <Loader message="Loading leaderboard..." />;
+  if (isLoading) return <Loader message="Chargement du classement..." />;
 
   return (
     <div className="space-y-6">

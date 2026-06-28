@@ -58,29 +58,29 @@ export const HomePage: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h1 className="text-5xl font-heading mb-2 text-gradient-psg">
-          Welcome, {user?.username}!
+        <h1 className="text-3xl sm:text-5xl font-heading mb-2 text-gradient-psg break-words">
+          Salut, {user?.username} !
         </h1>
         {user?.is_groom && (
-          <p className="text-fifa-gold text-xl flex items-center justify-center gap-2">
-            <GiCrown className="text-2xl" /> The Groom <GiCrown className="text-2xl" />
+          <p className="text-fifa-gold text-lg sm:text-xl flex items-center justify-center gap-2">
+            <GiCrown className="text-2xl" /> Le Marié <GiCrown className="text-2xl" />
           </p>
         )}
       </div>
 
       {profile && (
         <div
-          className="rounded-lg p-8 border backdrop-blur-sm"
+          className="rounded-lg p-6 sm:p-8 border backdrop-blur-sm"
           style={{
             background: 'rgba(26, 41, 66, 0.6)',
             borderColor: 'rgba(255, 255, 255, 0.1)',
           }}
         >
           <div className="text-center">
-            <p className="text-6xl font-numbers font-black text-gradient-gold mb-2">
+            <p className="text-5xl sm:text-6xl font-numbers font-black text-gradient-gold mb-2">
               {profile.total_points}
             </p>
-            <p className="text-text-secondary font-semibold uppercase tracking-wide text-sm">Total Points</p>
+            <p className="text-text-secondary font-semibold uppercase tracking-wide text-sm">Points totaux</p>
             <p className="text-xs text-text-tertiary mt-2">1 point = 1 crédit pour acheter des packs</p>
           </div>
         </div>
@@ -108,21 +108,21 @@ export const HomePage: React.FC = () => {
             to="/leaderboard"
             className="text-psg-red hover:text-white font-semibold mt-4 block text-center transition-colors uppercase tracking-wide"
           >
-            View Full Leaderboard →
+            Voir le classement complet →
           </Link>
         </Card>
 
         {dailyLeader && (
           <Card>
             <h2 className="text-2xl font-heading mb-4 flex items-center gap-2">
-              <FaStar className="text-fifa-gold" /> Today's Leader
+              <FaStar className="text-fifa-gold" /> Leader du jour
             </h2>
             <div className="text-center">
               <p className="text-3xl font-heading text-fifa-green mb-2">{dailyLeader.name}</p>
               <p className="text-gray-400">
-                {dailyLeader.points_today} points today
+                {dailyLeader.points_today} points aujourd'hui
               </p>
-              <p className="text-sm text-gray-500 mt-2">Chooses tomorrow's aperitif!</p>
+              <p className="text-sm text-gray-500 mt-2">Choisit l'apéro de demain !</p>
             </div>
           </Card>
         )}

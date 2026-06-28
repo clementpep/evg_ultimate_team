@@ -29,8 +29,13 @@ Frontend :
 - [x] `AdminDashboard.tsx` : épuré → +/− points, validation défis, CRUD défis, CRUD packs (catalogue par tier, toggle actif, rarity limitée au tier), classement, Danger Zone.
 - [x] Services : `getRewardCatalogue/create/update/deleteReward` (subtract & CRUD défis existaient déjà). Typecheck + build OK.
 
-### Chantier 2 — Passe mobile-friendly (À FAIRE)
-- [ ] Audit UX/UI mobile : Home, Leaderboard, Challenges, Packs, LE FIVE (terrain 5v5), Profile, Login, BottomNav.
+### Chantier 2 — Passe mobile-friendly ✅ FAIT (passe ciblée)
+Audit : Leaderboard, Packs, EVGTeam/FivePitch, BottomNav, Login, ProfileDropdown étaient **déjà responsive** (breakpoints `sm:`, safe-area, cibles 48px). Corrections appliquées sur les vrais points faibles :
+- [x] `HomePage` : `h1` responsive (`text-3xl sm:text-5xl`, plus d'overflow), padding/points responsive, **textes passés en FR** (Salut / Le Marié / Points totaux / Leader du jour / Voir le classement complet / Choisit l'apéro de demain).
+- [x] `ChallengesPage` : `flex-wrap` titre+badge (titres longs OK sur mobile) + loader FR.
+- [x] `LeaderboardPage` : loader FR.
+- [x] `App.tsx` footer : FR + date corrigée (Marseille, 3-5 juillet 2026 au lieu de « June 4-6 »).
+- Typecheck + build OK.
 
 ---
 

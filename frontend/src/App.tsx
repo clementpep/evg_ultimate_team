@@ -252,7 +252,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
       {/* Footer */}
       <footer className="text-center py-8 text-gray-500 text-sm">
-        <p>EVG Ultimate Team - Paul's Bachelor Party June 4-6, 2026</p>
+        <p>EVG Ultimate Team — Paul C. · Marseille, 3-5 juillet 2026</p>
         <p className="mt-1">🏆⚽🎮</p>
       </footer>
     </div>

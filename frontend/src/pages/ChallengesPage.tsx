@@ -11,7 +11,7 @@ import { BiTargetLock } from 'react-icons/bi';
 export const ChallengesPage: React.FC = () => {
   const { challenges, isLoading } = useChallenges();
 
-  if (isLoading) return <Loader message="Loading challenges..." />;
+  if (isLoading) return <Loader message="Chargement des défis..." />;
 
   const getChallengeIcon = (type: ChallengeType) => {
     switch (type) {
@@ -47,7 +47,7 @@ export const ChallengesPage: React.FC = () => {
             <Card key={challenge.id}>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
                     <span className="text-2xl">{getChallengeIcon(challenge.type)}</span>
                     <h3 className="text-xl font-semibold">{challenge.title}</h3>
                     <span className="badge status-pending capitalize">{challenge.type}</span>
@@ -75,7 +75,7 @@ export const ChallengesPage: React.FC = () => {
               <Card key={challenge.id} className="border-blue-500">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
                       <span className="text-2xl">{getChallengeIcon(challenge.type)}</span>
                       <h3 className="text-xl font-semibold">{challenge.title}</h3>
                       <span className="badge status-active">Actif</span>
@@ -104,7 +104,7 @@ export const ChallengesPage: React.FC = () => {
               <Card key={challenge.id} className="opacity-75">
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex flex-wrap items-center gap-2 mb-2">
                       <span className="text-2xl">{getChallengeIcon(challenge.type)}</span>
                       <h3 className="text-xl font-semibold">{challenge.title}</h3>
                       <span className="badge status-completed">Complété</span>
