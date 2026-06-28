@@ -7,6 +7,7 @@ Handles admin-only operations like database reset, bulk operations, etc.
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db, SessionLocal, engine, Base
+from app.models import Participant, Challenge, PackReward
 from app.seed import auto_seed_if_empty
 from app.schemas.common import SuccessResponse
 from app.utils.dependencies import require_admin
@@ -68,11 +69,19 @@ def reset_database(
             logger.info("Seeding database with initial data...")
             auto_seed_if_empty(new_db)
 
+            # Count what was actually seeded so the message never goes stale
+            participants = new_db.query(Participant).count()
+            challenges = new_db.query(Challenge).count()
+            rewards = new_db.query(PackReward).count()
+
             logger.info("✅ Database reset completed successfully!")
 
             return SuccessResponse(
                 success=True,
-                message="Database reset successfully. 13 participants, 18 challenges, and 26 rewards created."
+                message=(
+                    f"Database reset successfully. {participants} participants, "
+                    f"{challenges} challenges, and {rewards} rewards created."
+                )
             )
         finally:
             new_db.close()
