@@ -99,24 +99,40 @@
 > Branche : `feat/pack-simplification-and-referee`. DB resettable.
 
 ## Chantier A — Simplification & perf
-- [ ] A1. Supprimer `experience_service.py` + route `/challenges/generate/contextual` + export + tests liés
-- [ ] A2. `open_pack` → `select_random_reward` ; supprimer rareté dynamique + tests adaptés
-- [ ] A3. `PackOpeningModal` : confettis ~24-30, retirer boucles `Infinity` superflues
-- [ ] Commit A
+- [x] A1. Supprimé `experience_service.py` + route `/challenges/generate/contextual` + schémas + export + tests liés
+- [x] A2. `open_pack` → `select_random_reward` ; rareté dynamique supprimée + tests adaptés
+- [x] A3. `PackOpeningModal` : confettis 80-120 → 20-30
+- [x] Commit A (`0822704`) — net −442 lignes
 
 ## Chantier B — Refonte packs
-- [ ] B1. Réécrire les 24 récompenses (FR) dans `seed.py`, rarités alignées sur `RARITY_WEIGHTS`
-- [ ] B2. Script `seed_pack_rewards.py` : purge + reseed ; documenter reset VPS
-- [ ] Commit B
+- [x] B1. 24 récompenses réécrites (FR, mini-défis + petits avantages) dans `seed.py`, rarités alignées (6/tier, toutes atteignables)
+- [x] B2. `seed_pack_rewards.py` réutilise `PACK_REWARDS` + mode `--force` (purge+reseed)
+- [x] Commit B
 
 ## Chantier C — Arbitre 5v5
-- [ ] C1. Backend : colonne `referee` + schéma + validations service
-- [ ] C2. Front : zone Arbitre dans `FivePitch` + câblage `EVGTeamPage` + types
-- [ ] Commit C
+- [x] C1. Backend : colonne `referee` + schéma (`MAX_REFEREE_SIZE`) + validations service
+- [x] C2. Front : zone Arbitre dans `FivePitch` + câblage `EVGTeamPage` + types
+- [x] Commit C
 
 ## Vérification finale
-- [ ] `pytest` vert · `tsc --noEmit` + `npm run build` OK
+- [x] `pytest` 20/20 · `tsc --noEmit` OK + `npm run build` OK
 - [ ] Test manuel Clément (reset DB + compo arbitre)
+
+## Review (session 2026-06-28)
+- **A** : retiré le générateur de défis dynamiques (anglais + debug `[Context:]`) et la pondération
+  de rareté dynamique (nuit/pity) — sur-ingénierie inutile à 13 joueurs. Tirage simple par poids fixes.
+  Confettis du modal divisés par ~4 pour la fluidité mobile.
+- **B** : packs allégés — fini cartes cadeaux/vols massifs/gages lourds. `seed.py` = source unique
+  du catalogue ; le script manuel le réutilise (plus de duplication désynchronisée).
+- **C** : arbitre ajouté proprement au 5v5 existant (zone tap-to-place, ≤1, unicité globale).
+- **⚠ Reset DB requis** avant déploiement : la colonne `referee` et le nouveau catalogue n'apparaissent
+  qu'après recréation du schéma (`create_all` n'altère pas une table existante).
+  Procédure : arrêter l'app → supprimer la base (ou DROP des tables `team_composition` + `pack_rewards`)
+  → redémarrer (auto-seed) ; ou `python scripts/seed_pack_rewards.py --force` pour seulement re-seeder les packs.
+
+---
+
+### Session 2026-06-07 — Découverte d'équipe + Five 5v5
 
 ---
 
