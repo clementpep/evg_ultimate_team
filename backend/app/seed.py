@@ -223,37 +223,41 @@ def seed_challenges(db: Session) -> None:
 # =============================================================================
 # Pack rewards catalogue — single source of truth
 # =============================================================================
+# A pack reward is a REWARD: it must BENEFIT the player who opens it (someone
+# pays/serves them a drink, immunities, point boosts, power over others…), as
+# opposed to a "défi"/challenge which is a task to complete. A few clearly
+# labelled "🎲 Gage fun" perks are kept for flavour, but the majority are pure
+# advantages.
 # Rarities MUST match RARITY_WEIGHTS in pack_service.py, otherwise a reward is
 # never drawn (bronze=common · silver=common/rare · gold=rare/epic ·
-# ultimate=epic/legendary). Rewards are intentionally light & fun: quick dares
-# and small in-game perks, nothing material or heavy — the EVG moves fast.
+# ultimate=epic/legendary).
 
 PACK_REWARDS = [
-    # ----- Bronze — gages express (common) -----
-    {"tier": "bronze", "name": "Cul-sec", "description": "Termine ton verre cul-sec, là, maintenant.", "type": "power", "rarity": "common"},
-    {"tier": "bronze", "name": "Commande mimée", "description": "Commande ta prochaine boisson uniquement en mimant, sans parler.", "type": "power", "rarity": "common"},
-    {"tier": "bronze", "name": "Accent marseillais", "description": "Parle avec l'accent marseillais pendant 10 minutes. « Putaing ! »", "type": "power", "rarity": "common"},
-    {"tier": "bronze", "name": "DJ du moment", "description": "Choisis la musique du groupe pendant 15 minutes.", "type": "power", "rarity": "common"},
-    {"tier": "bronze", "name": "Photo ridicule", "description": "Organise une photo de groupe dans la pose la plus ridicule possible.", "type": "power", "rarity": "common"},
-    {"tier": "bronze", "name": "Trinque générale", "description": "Trinque avec tout le monde avant ta prochaine gorgée.", "type": "power", "rarity": "common"},
+    # ----- Bronze — petits avantages (common) -----
+    {"tier": "bronze", "name": "Un shot pour toi", "description": "Le joueur de ton choix t'offre un shot (ou un soft).", "type": "shot", "rarity": "common"},
+    {"tier": "bronze", "name": "Serveur attitré", "description": "Le joueur à ta gauche t'apporte ta prochaine boisson.", "type": "power", "rarity": "common"},
+    {"tier": "bronze", "name": "DJ du moment", "description": "Tu choisis la musique du groupe pendant 15 minutes.", "type": "power", "rarity": "common"},
+    {"tier": "bronze", "name": "Skip pénalité", "description": "Annule la prochaine pénalité qui te vise.", "type": "immunity", "rarity": "common"},
+    {"tier": "bronze", "name": "Photographe officiel", "description": "Tout le monde doit refaire la photo que tu demandes.", "type": "power", "rarity": "common"},
+    {"tier": "bronze", "name": "🎲 Gage fun : accent marseillais", "description": "Gage assumé : parle avec l'accent marseillais pendant 10 minutes. « Putaing ! »", "type": "power", "rarity": "common"},
 
-    # ----- Silver — gage + petit avantage (common/rare) -----
+    # ----- Silver — bons avantages (common/rare) -----
     {"tier": "silver", "name": "×2 prochain défi", "description": "Double tes points sur ton prochain défi validé.", "type": "power", "rarity": "common"},
-    {"tier": "silver", "name": "Skip pénalité", "description": "Annule la prochaine pénalité qui te vise.", "type": "immunity", "rarity": "common"},
-    {"tier": "silver", "name": "Mini-speech", "description": "Fais un discours de 30 secondes sur Paul, debout sur une chaise.", "type": "power", "rarity": "common"},
-    {"tier": "silver", "name": "Tournée d'eau", "description": "Offre une tournée (eau, soft ou shot) à 3 personnes de ton choix.", "type": "shot", "rarity": "rare"},
+    {"tier": "silver", "name": "Immunité 30 min", "description": "Aucune pénalité ne peut te toucher pendant 30 minutes.", "type": "immunity", "rarity": "common"},
+    {"tier": "silver", "name": "Tournée offerte", "description": "Un joueur de ton choix t'offre une tournée (eau, soft ou shot).", "type": "shot", "rarity": "rare"},
     {"tier": "silver", "name": "Échange de place", "description": "Échange ta place (table, voiture…) avec qui tu veux pendant 30 minutes.", "type": "power", "rarity": "rare"},
-    {"tier": "silver", "name": "Imitation", "description": "Imite un autre participant jusqu'à ce que le groupe devine qui c'est.", "type": "power", "rarity": "rare"},
+    {"tier": "silver", "name": "Au service", "description": "Paul t'apporte ta prochaine boisson.", "type": "power", "rarity": "rare"},
+    {"tier": "silver", "name": "Maître du gage", "description": "Assigne un petit gage fun à la personne de ton choix.", "type": "power", "rarity": "rare"},
 
-    # ----- Gold — avantages sympas (rare/epic) -----
+    # ----- Gold — gros avantages (rare/epic) -----
     {"tier": "gold", "name": "Immunité 1h", "description": "Aucune pénalité ne peut te toucher pendant 1 heure.", "type": "immunity", "rarity": "rare"},
     {"tier": "gold", "name": "Capitaine d'un soir", "description": "Tu choisis le prochain défi d'équipe.", "type": "power", "rarity": "rare"},
-    {"tier": "gold", "name": "Service royal", "description": "Paul t'apporte ta prochaine boisson.", "type": "power", "rarity": "rare"},
+    {"tier": "gold", "name": "Service royal", "description": "Paul te sert tes boissons pendant 1 heure.", "type": "power", "rarity": "rare"},
     {"tier": "gold", "name": "+50 crédits", "description": "Bonus de 50 crédits pour ouvrir plus de packs.", "type": "power", "rarity": "epic"},
-    {"tier": "gold", "name": "Maître du gage", "description": "Assigne un petit gage fun à la personne de ton choix.", "type": "power", "rarity": "epic"},
-    {"tier": "gold", "name": "Photographe officiel", "description": "Tout le monde doit refaire la photo que tu demandes.", "type": "power", "rarity": "epic"},
+    {"tier": "gold", "name": "Garde du corps", "description": "Le joueur de ton choix doit te servir et t'accompagner pendant 30 minutes.", "type": "power", "rarity": "epic"},
+    {"tier": "gold", "name": "Maître du gage XL", "description": "Assigne un gage fun à 2 personnes de ton choix.", "type": "power", "rarity": "epic"},
 
-    # ----- Ultimate — spécial mais léger (epic/legendary) -----
+    # ----- Ultimate — récompenses premium (epic/legendary) -----
     {"tier": "ultimate", "name": "Thème de l'apéro", "description": "Tu choisis le thème du prochain apéro.", "type": "power", "rarity": "epic"},
     {"tier": "ultimate", "name": "Paul porte ton maillot", "description": "Paul porte ton maillot ou un accessoire à toi pendant 30 minutes.", "type": "power", "rarity": "epic"},
     {"tier": "ultimate", "name": "Immunité corvée", "description": "Aucune corvée pour toi dimanche matin.", "type": "immunity", "rarity": "legendary"},
