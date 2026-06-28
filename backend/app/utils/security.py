@@ -193,14 +193,25 @@ def verify_admin_credentials(username: str, password: str) -> bool:
 # Token Payload Helpers
 # =============================================================================
 
-def create_participant_token_data(participant_id: int, username: str, is_groom: bool = False) -> dict:
+def create_participant_token_data(
+    participant_id: int,
+    username: str,
+    is_groom: bool = False,
+    is_admin: bool = False,
+) -> dict:
     """
     Create token payload for a participant.
+
+    The token type stays "participant" even for the admin (Clément), because the
+    admin is a regular player with a merged account: he plays AND administrates.
+    Setting is_admin=True keeps require_admin happy while get_current_participant
+    still resolves his real participant row.
 
     Args:
         participant_id: Participant's ID
         username: Participant's username
         is_groom: Whether participant is the groom
+        is_admin: Whether participant also has admin privileges
 
     Returns:
         Dictionary with token payload data
@@ -213,10 +224,26 @@ def create_participant_token_data(participant_id: int, username: str, is_groom: 
         "sub": f"participant_{participant_id}",
         "user_id": participant_id,
         "username": username,
-        "is_admin": False,
+        "is_admin": is_admin,
         "is_groom": is_groom,
         "type": "participant"
     }
+
+
+def verify_admin_password(password: str) -> bool:
+    """
+    Verify a password against the configured admin password.
+
+    Used by the merged-account admin login: the admin is identified by his
+    participant row (is_admin flag), and this password gates the privilege.
+
+    Args:
+        password: Plain text password to check
+
+    Returns:
+        True if the password matches the configured admin password
+    """
+    return password == settings.admin_password
 
 
 def create_admin_token_data(admin_id: int, username: str) -> dict:

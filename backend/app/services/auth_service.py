@@ -9,13 +9,25 @@ from typing import Optional
 from app.models import Participant
 from app.schemas.auth import ParticipantLogin, AdminLogin, AuthToken
 from app.utils.security import (
-    verify_admin_credentials,
+    verify_admin_password,
     create_access_token,
     create_participant_token_data,
-    create_admin_token_data
 )
 from app.utils.exceptions import InvalidCredentialsError
 from app.utils.logger import log_auth_attempt, logger
+
+
+# =============================================================================
+# Shared helpers
+# =============================================================================
+
+def _grant_welcome_pack_if_needed(db: Session, participant: Participant) -> None:
+    """Give the one-time welcome pack (1 silver) on the participant's first login."""
+    if not participant.has_received_welcome_pack:
+        participant.add_pack("silver")
+        participant.has_received_welcome_pack = True
+        db.commit()
+        logger.info(f"Welcome pack (1 silver) given to {participant.name} on first login")
 
 
 # =============================================================================
@@ -59,17 +71,15 @@ def authenticate_participant(
         )
 
     # Give welcome pack (1 silver) on first login
-    if not participant.has_received_welcome_pack:
-        participant.add_pack("silver")
-        participant.has_received_welcome_pack = True
-        db.commit()
-        logger.info(f"Welcome pack (1 silver) given to {participant.name} on first login")
+    _grant_welcome_pack_if_needed(db, participant)
 
-    # Create token data
+    # Create token data. Note: admin privileges are intentionally NOT granted
+    # here — the name-only participant login is unauthenticated, so admin powers
+    # require the password-gated admin login below (see authenticate_admin).
     token_data = create_participant_token_data(
         participant_id=participant.id,
         username=participant.name,
-        is_groom=participant.is_groom
+        is_groom=participant.is_groom,
     )
 
     # Generate access token
@@ -93,55 +103,70 @@ def authenticate_participant(
 # =============================================================================
 
 def authenticate_admin(
+    db: Session,
     login_data: AdminLogin
 ) -> AuthToken:
     """
-    Authenticate an admin using username and password.
+    Authenticate the admin using his participant name and the admin password.
 
-    Verifies credentials against environment configuration.
+    The admin is a merged account: Clément is a regular participant flagged
+    is_admin=True. He logs in with his own name ("Clément P.") plus the
+    password-gated admin secret, and receives a combined token (participant type,
+    real participant id, is_admin=True) so he both plays and administrates.
 
     Args:
+        db: Database session
         login_data: Login request data with username and password
 
     Returns:
-        AuthToken with access token and admin information
+        AuthToken carrying the admin's real participant id and is_admin=True
 
     Raises:
-        InvalidCredentialsError: If credentials are invalid
+        InvalidCredentialsError: If the participant is not an admin or the
+            password is wrong
 
     Example:
-        >>> login = AdminLogin(username="clement", password="evg2026_admin")
-        >>> token = authenticate_admin(login)
-        >>> print(token.is_admin)
-        True
+        >>> login = AdminLogin(username="Clément P.", password="<admin password>")
+        >>> token = authenticate_admin(db, login)
+        >>> print(token.is_admin, token.user_id)
+        True 2
     """
-    # Verify admin credentials
-    if not verify_admin_credentials(login_data.username, login_data.password):
+    # Find the participant by name (case-insensitive)
+    participant = db.query(Participant).filter(
+        Participant.name.ilike(login_data.username)
+    ).first()
+
+    # Generic error message — don't leak whether the name exists or is an admin
+    if not participant or not participant.is_admin or not verify_admin_password(login_data.password):
         log_auth_attempt(login_data.username, success=False, is_admin=True)
         raise InvalidCredentialsError(
             detail="Invalid admin username or password"
         )
 
-    # Create token data for admin
-    # Admin ID is 0 to distinguish from participant IDs
-    token_data = create_admin_token_data(
-        admin_id=0,
-        username=login_data.username
+    # The admin plays too: grant his welcome pack on first login like everyone else
+    _grant_welcome_pack_if_needed(db, participant)
+
+    # Combined token: participant type + real id + admin privileges
+    token_data = create_participant_token_data(
+        participant_id=participant.id,
+        username=participant.name,
+        is_groom=participant.is_groom,
+        is_admin=True,
     )
 
     # Generate access token
     access_token = create_access_token(token_data)
 
     # Log successful authentication
-    log_auth_attempt(login_data.username, success=True, is_admin=True)
+    log_auth_attempt(participant.name, success=True, is_admin=True)
 
     return AuthToken(
         access_token=access_token,
         token_type="bearer",
-        user_id=0,
-        username=login_data.username,
+        user_id=participant.id,
+        username=participant.name,
         is_admin=True,
-        is_groom=False
+        is_groom=participant.is_groom
     )
 
 

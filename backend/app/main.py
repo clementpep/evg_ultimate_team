@@ -12,7 +12,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from app.config import get_settings
 from app.database import init_db, get_db, SessionLocal
-from app.seed import auto_seed_if_empty
+from app.seed import auto_seed_if_empty, ensure_schema
 from app.routes import (
     auth_router,
     participants_router,
@@ -62,6 +62,7 @@ async def lifespan(app: FastAPI):
     # Auto-seed database if empty
     db = SessionLocal()
     try:
+        ensure_schema(db)
         auto_seed_if_empty(db)
     finally:
         db.close()

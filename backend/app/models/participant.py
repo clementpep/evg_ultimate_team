@@ -56,6 +56,15 @@ class Participant(Base):
         comment="True if this participant is the groom (Paul)"
     )
 
+    is_admin = Column(
+        Boolean,
+        default=False,
+        nullable=False,
+        index=True,
+        comment="True if this participant has admin privileges (Clément). "
+                "Clément both plays and administrates from a single merged account."
+    )
+
     has_received_welcome_pack = Column(
         Boolean,
         default=False,

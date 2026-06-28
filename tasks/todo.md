@@ -4,6 +4,36 @@
 > Légende confiance : ✅ confirmé · 🟡 à vérifier avant fix · ⬜ non commencé
 > Effort : S (≤1h) · M (½j) · L (≥1j)
 
+---
+
+## Session 2026-06-28 — 3 chantiers handoff
+
+### Chantier 3 — Bug carte de Paul ✅ FAIT
+- [x] `App.tsx` : « Voir ma carte » (replay) montre toujours la carte FUT perso (Paul inclus) ; SquadDiscovery réservé au 1er login du groom. Typecheck OK.
+
+### Chantier 1 — Refonte panel admin ✅ FAIT
+Décisions produit (Clément) : **Clément P. = unique admin, joue ET administre** (compte fusionné id 2, token combiné participant+admin) · login = **nom « Clément P. » + mot de passe admin** · **packs migrés en base + CRUD**.
+
+Backend :
+- [x] `participant.py` : colonne `is_admin`.
+- [x] `seed.py` : Clément P. `is_admin=True` + **migration idempotente `ensure_schema()`** (ALTER ADD COLUMN si absente + flag Clément) appelée au startup → **pas de reset DB requis**, pas de deadlock login.
+- [x] `security.py` : `create_participant_token_data(..., is_admin)` + `verify_admin_password`.
+- [x] `auth_service.authenticate_admin(db, login_data)` : find par nom → `is_admin` + mot de passe → token combiné (type=participant, id réel). Welcome pack mutualisé. **Login participant ne donne PAS l'admin** (sécurité : login nom-seul non authentifié).
+- [x] `routes/auth.py` : `db` injecté.
+- [x] Packs CRUD : schémas Create/Update/AdminResponse + `pack_service` (list_all/create/update/delete, garde rarity∈tier) + `routes/packs.py` `/packs/admin/rewards` GET/POST/PUT/DELETE (`require_admin`).
+- [x] Tests : 20/20 + smoke (login admin id réel, mauvais mdp/non-admin → 401, CRUD packs, migration old-schema).
+
+Frontend :
+- [x] `App.tsx` : plus de redirection admin ; nav+bottomnav+carte pour Clément ; `/admin` via profil.
+- [x] `ProfileDropdown.tsx` : entrée « Admin Panel » (si `is_admin`).
+- [x] `AdminDashboard.tsx` : épuré → +/− points, validation défis, CRUD défis, CRUD packs (catalogue par tier, toggle actif, rarity limitée au tier), classement, Danger Zone.
+- [x] Services : `getRewardCatalogue/create/update/deleteReward` (subtract & CRUD défis existaient déjà). Typecheck + build OK.
+
+### Chantier 2 — Passe mobile-friendly (À FAIRE)
+- [ ] Audit UX/UI mobile : Home, Leaderboard, Challenges, Packs, LE FIVE (terrain 5v5), Profile, Login, BottomNav.
+
+---
+
 ## Phase 0 — Réparation du clone ✅ FAIT
 - [x] Index git repeuplé depuis HEAD, 85 fichiers manquants restaurés
 - [x] LFS neutralisé en config locale (fin des crashs sh) + images matérialisées

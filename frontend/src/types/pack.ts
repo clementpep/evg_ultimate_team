@@ -19,6 +19,36 @@ export interface PackReward {
   rarity: 'common' | 'rare' | 'epic' | 'legendary';
 }
 
+/** Full reward representation used by the admin catalogue (CRUD). */
+export interface PackRewardAdmin {
+  id: number;
+  tier: PackTier;
+  name: string;
+  description: string;
+  type: string;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  is_active: boolean;
+}
+
+export interface PackRewardCreate {
+  tier: PackTier;
+  name: string;
+  description: string;
+  type: string;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  is_active?: boolean;
+}
+
+export type PackRewardUpdate = Partial<PackRewardCreate>;
+
+/** Rarities actually drawable per tier (mirror of backend RARITY_WEIGHTS). */
+export const TIER_RARITIES: Record<PackTier, Array<PackRewardAdmin['rarity']>> = {
+  bronze: ['common'],
+  silver: ['common', 'rare'],
+  gold: ['rare', 'epic'],
+  ultimate: ['epic', 'legendary'],
+};
+
 export interface PackOpenResult {
   success: boolean;
   reward: PackReward;

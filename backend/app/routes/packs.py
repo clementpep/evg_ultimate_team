@@ -14,11 +14,14 @@ from app.schemas.pack import (
     PackOpenResponse,
     PackHistoryItem,
     PackCostsResponse,
-    PackRewardResponse
+    PackRewardResponse,
+    PackRewardAdminResponse,
+    PackRewardCreate,
+    PackRewardUpdate,
 )
-from app.schemas.common import APIResponse
+from app.schemas.common import APIResponse, SuccessResponse
 from app.services import pack_service
-from app.utils.dependencies import get_current_participant
+from app.utils.dependencies import get_current_participant, require_admin
 from app.utils.exceptions import EVGException, format_exception_response
 from app.utils.logger import logger
 
@@ -195,6 +198,81 @@ def get_history(
     except Exception as e:
         logger.error(f"Unexpected error getting pack history: {str(e)}")
         raise HTTPException(status_code=500, detail="Failed to retrieve pack history")
+
+
+# =============================================================================
+# Admin: Pack Reward CRUD
+# =============================================================================
+
+def _admin_reward_response(reward) -> PackRewardAdminResponse:
+    """Map a PackReward ORM row to the admin response schema."""
+    return PackRewardAdminResponse(**reward.to_dict())
+
+
+@router.get("/admin/rewards", response_model=APIResponse[List[PackRewardAdminResponse]])
+def admin_list_rewards(
+    admin = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """List the full reward catalogue (active and inactive). Admin only."""
+    rewards = pack_service.list_all_rewards(db)
+    return APIResponse(
+        success=True,
+        data=[_admin_reward_response(r) for r in rewards],
+        message=f"Retrieved {len(rewards)} reward(s)"
+    )
+
+
+@router.post("/admin/rewards", response_model=APIResponse[PackRewardAdminResponse])
+def admin_create_reward(
+    reward_data: PackRewardCreate,
+    admin = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Create a new pack reward. Admin only."""
+    try:
+        reward = pack_service.create_reward(db, reward_data)
+        return APIResponse(
+            success=True,
+            data=_admin_reward_response(reward),
+            message=f"Reward created: {reward.reward_name}"
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.put("/admin/rewards/{reward_id}", response_model=APIResponse[PackRewardAdminResponse])
+def admin_update_reward(
+    reward_id: int,
+    reward_data: PackRewardUpdate,
+    admin = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Update an existing pack reward. Admin only."""
+    try:
+        reward = pack_service.update_reward(db, reward_id, reward_data)
+        return APIResponse(
+            success=True,
+            data=_admin_reward_response(reward),
+            message=f"Reward updated: {reward.reward_name}"
+        )
+    except ValueError as e:
+        status_code = 404 if "not found" in str(e).lower() else 400
+        raise HTTPException(status_code=status_code, detail=str(e))
+
+
+@router.delete("/admin/rewards/{reward_id}", response_model=SuccessResponse)
+def admin_delete_reward(
+    reward_id: int,
+    admin = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Delete a pack reward. Admin only."""
+    try:
+        pack_service.delete_reward(db, reward_id)
+        return SuccessResponse(success=True, message=f"Reward {reward_id} deleted")
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 @router.get("/rewards/{tier}", response_model=APIResponse[List[PackRewardResponse]])

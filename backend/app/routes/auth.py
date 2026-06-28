@@ -53,30 +53,35 @@ def participant_login(
 
 
 @router.post("/admin-login", response_model=APIResponse[AuthToken])
-def admin_login(login_data: AdminLogin):
+def admin_login(
+    login_data: AdminLogin,
+    db: Session = Depends(get_db)
+):
     """
-    Admin login endpoint (requires username and password).
+    Admin login endpoint (requires the admin's participant name and password).
 
-    For Clément (organizer) to access admin dashboard.
+    Clément is a merged account: he logs in with his own participant name plus
+    the admin password, and receives a combined token (he both plays and
+    administrates).
 
     **Request Body:**
-    - `username`: Admin username
+    - `username`: The admin participant's name (e.g. "Clément P.")
     - `password`: Admin password
 
     **Returns:**
-    - Access token with admin privileges
-    - Admin information
+    - Access token with admin privileges (carries his real participant id)
+    - User information
 
     **Example:**
     ```json
     {
-        "username": "clement",
-        "password": "evg2026_admin"
+        "username": "Clément P.",
+        "password": "<admin password>"
     }
     ```
     """
     try:
-        token = auth_service.authenticate_admin(login_data)
+        token = auth_service.authenticate_admin(db, login_data)
         return APIResponse(
             success=True,
             data=token,

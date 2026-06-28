@@ -42,9 +42,11 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     }
   }, [user?.id]);
 
-  // Trigger card reveal animation immediately after authentication (first login)
+  // Trigger card reveal animation immediately after authentication (first login).
+  // The admin (Clément) plays too, so he gets his own card like any participant;
+  // only the groom is routed to squad discovery instead.
   useEffect(() => {
-    if (isAuthenticated && shouldShowReveal && !isLoading && user && !user.is_admin && !isGroom) {
+    if (isAuthenticated && shouldShowReveal && !isLoading && user && !isGroom) {
       // Small delay to let auth settle
       setTimeout(() => setShowReveal(true), 300);
     }
@@ -57,17 +59,14 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     }
   }, [isAuthenticated, shouldShowDiscovery, isLoading, user, isGroom]);
 
-  // Trigger animation on demand (replay from profile) — discovery for the groom,
-  // own-card reveal for everyone else.
+  // Trigger animation on demand ("Voir ma carte" from profile) — always the
+  // user's own FUT card, including for the groom. Squad discovery stays reserved
+  // for the groom's first login only.
   useEffect(() => {
-    if (shouldTriggerReveal && isAuthenticated && user && !user.is_admin) {
-      if (isGroom) {
-        setShowDiscovery(true);
-      } else {
-        setShowReveal(true);
-      }
+    if (shouldTriggerReveal && isAuthenticated && user) {
+      setShowReveal(true);
     }
-  }, [shouldTriggerReveal, isAuthenticated, user, isGroom]);
+  }, [shouldTriggerReveal, isAuthenticated, user]);
 
   const handleRevealComplete = () => {
     if (shouldShowReveal) {
@@ -99,8 +98,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
 
   return (
     <>
-      {/* First-login own-card reveal (non-admin, non-groom) */}
-      {showReveal && user && !user.is_admin && !isGroom && (
+      {/* Own-card reveal: first login (non-groom) or "Voir ma carte" replay (anyone) */}
+      {showReveal && user && (
         <PlayerCardReveal
           isOpen={showReveal}
           username={user.username}
@@ -146,9 +145,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     </Link>
   );
 
-  // Fetch participant data and rank for non-admin users
+  // Fetch participant data and rank. The admin (Clément) is a real participant
+  // too, so we fetch his stats as well.
   useEffect(() => {
-    if (!user || user.is_admin) return;
+    if (!user) return;
 
     const fetchUserData = async () => {
       try {
@@ -204,6 +204,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   username={user?.username || ''}
                   avatarUrl={getAvatarUrl(user?.username || '')}
                   isGroom={user?.is_groom || false}
+                  isAdmin={user?.is_admin || false}
                   totalPoints={totalPoints}
                   rank={userRank}
                   onLogout={logout}
@@ -214,15 +215,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
 
           {/* Navigation capsule */}
-          {!user?.is_admin && (
-            <div
-              className="
+          <div
+            className="
                 hidden md:flex justify-center
                 px-4 md:px-0
                 md:absolute md:top-1/2 md:left-1/2
                 md:-translate-x-1/2 md:-translate-y-1/2
               "
-            >
+          >
               <div
                 className="
                   flex flex-wrap items-center gap-1
@@ -238,8 +238,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <NavItem to="/challenges">Défis</NavItem>
                 <NavItem to="/packs">Packs</NavItem>
               </div>
-            </div>
-          )}
+          </div>
         </div>
       </nav>
 
@@ -248,8 +247,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         {children}
       </main>
 
-      {/* Bottom Navigation - Mobile only (non-admin) */}
-      {!user?.is_admin && <BottomNavigation />}
+      {/* Bottom Navigation - Mobile only */}
+      <BottomNavigation />
 
       {/* Footer */}
       <footer className="text-center py-8 text-gray-500 text-sm">
@@ -262,8 +261,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
 // Main App Component
 const AppContent: React.FC = () => {
-  const { user } = useAuth();
-
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
@@ -272,7 +269,7 @@ const AppContent: React.FC = () => {
         element={
           <ProtectedRoute>
             <Layout>
-              {user?.is_admin ? <Navigate to="/admin" replace /> : <HomePage />}
+              <HomePage />
             </Layout>
           </ProtectedRoute>
         }

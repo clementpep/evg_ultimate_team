@@ -10,9 +10,10 @@
  */
 
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GiCrown } from 'react-icons/gi';
-import { IoLogOut, IoSparkles } from 'react-icons/io5';
+import { IoLogOut, IoSparkles, IoShieldHalf } from 'react-icons/io5';
 import { useClickOutside } from '@hooks/useClickOutside';
 import { getDefaultAvatarUrl } from '@utils/avatarUtils';
 
@@ -20,6 +21,7 @@ interface ProfileDropdownProps {
   username: string;
   avatarUrl: string;
   isGroom: boolean;
+  isAdmin?: boolean;
   totalPoints: number;
   rank: number;
   onLogout: () => void;
@@ -30,6 +32,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
   username,
   avatarUrl,
   isGroom,
+  isAdmin = false,
   totalPoints,
   rank,
   onLogout,
@@ -37,6 +40,7 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   // Close dropdown when clicking outside
   useClickOutside(dropdownRef, () => setIsOpen(false));
@@ -169,6 +173,20 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
               <IoSparkles className="text-fifa-gold" />
               <span className="font-semibold">Voir ma carte</span>
             </button>
+
+            {/* Admin Panel — admin only (Clément) */}
+            {isAdmin && (
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  navigate('/admin');
+                }}
+                className="w-full text-left px-4 py-3 text-white hover:bg-fifa-gold/20 transition-colors flex items-center gap-2 focus:outline-none focus:bg-fifa-gold/20 border-b border-white/10"
+              >
+                <IoShieldHalf className="text-fifa-gold" />
+                <span className="font-semibold">Admin Panel</span>
+              </button>
+            )}
 
             {/* Bouton Déconnexion */}
             <button

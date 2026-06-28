@@ -4,16 +4,42 @@ Auto-seed module for EVG Ultimate Team.
 Automatically seeds the database with initial data if empty.
 """
 
+from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 from app.models import Participant, Challenge, ChallengeType, ChallengeStatus, PackReward
 from app.utils.logger import logger
 
 
+def ensure_schema(db: Session) -> None:
+    """
+    Lightweight, idempotent migrations for SQLite.
+
+    ``create_all`` creates missing tables but never ALTERs existing ones, so
+    columns added after the first deploy must be patched in here to avoid a full
+    DB reset (and the chicken-and-egg problem where admin login needs a column
+    that doesn't exist yet). Currently handles: participants.is_admin.
+    """
+    bind = db.get_bind()
+    if bind.dialect.name != "sqlite":
+        return  # Other backends: rely on a proper migration / reset
+
+    columns = {c["name"] for c in inspect(bind).get_columns("participants")}
+    if "is_admin" not in columns:
+        logger.info("Migrating: adding participants.is_admin column")
+        db.execute(text(
+            "ALTER TABLE participants ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT 0"
+        ))
+        # Flag Clément as the admin on pre-existing databases
+        db.execute(text("UPDATE participants SET is_admin = 1 WHERE name = 'Clément P.'"))
+        db.commit()
+        logger.info("Migration complete: participants.is_admin")
+
+
 def seed_participants(db: Session) -> None:
     """Seed the database with all 13 participants."""
     participants_data = [
-        {"name": "Paul C.", "is_groom": True, "avatar_url": None},
-        {"name": "Clément P.", "is_groom": False, "avatar_url": None},  # Admin
+        {"name": "Paul C.", "is_groom": True, "is_admin": False, "avatar_url": None},
+        {"name": "Clément P.", "is_groom": False, "is_admin": True, "avatar_url": None},  # Plays AND administrates
         {"name": "Paul J.", "is_groom": False, "avatar_url": None},
         {"name": "Hugo F.", "is_groom": False, "avatar_url": None},
         {"name": "Théo C.", "is_groom": False, "avatar_url": None},
@@ -31,6 +57,7 @@ def seed_participants(db: Session) -> None:
         participant = Participant(
             name=data["name"],
             is_groom=data["is_groom"],
+            is_admin=data.get("is_admin", False),
             avatar_url=data["avatar_url"],
             total_points=0,
             current_packs={"bronze": 0, "silver": 0, "gold": 0, "ultimate": 0}

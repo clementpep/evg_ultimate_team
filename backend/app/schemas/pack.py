@@ -9,6 +9,10 @@ from datetime import datetime
 from typing import Optional
 
 
+_TIER_PATTERN = "^(bronze|silver|gold|ultimate)$"
+_RARITY_PATTERN = "^(common|rare|epic|legendary)$"
+
+
 # =============================================================================
 # Pack Inventory Schemas
 # =============================================================================
@@ -57,6 +61,46 @@ class PackRewardResponse(BaseModel):
             }
         }
     }
+
+
+# =============================================================================
+# Pack Reward Admin (CRUD) Schemas
+# =============================================================================
+
+class PackRewardAdminResponse(BaseModel):
+    """Full reward representation for the admin catalogue (includes tier/state)."""
+
+    id: int
+    tier: str
+    name: str
+    description: str
+    type: str
+    rarity: str
+    is_active: bool
+
+    model_config = {"from_attributes": True}
+
+
+class PackRewardCreate(BaseModel):
+    """Request schema to create a pack reward."""
+
+    tier: str = Field(..., pattern=_TIER_PATTERN, description="Pack tier")
+    name: str = Field(..., min_length=1, max_length=200)
+    description: str = Field(..., min_length=1, max_length=500)
+    type: str = Field(..., min_length=1, max_length=50, description="shot/immunity/power/wildcard")
+    rarity: str = Field(..., pattern=_RARITY_PATTERN, description="common/rare/epic/legendary")
+    is_active: bool = True
+
+
+class PackRewardUpdate(BaseModel):
+    """Request schema to update a pack reward (all fields optional)."""
+
+    tier: Optional[str] = Field(None, pattern=_TIER_PATTERN)
+    name: Optional[str] = Field(None, min_length=1, max_length=200)
+    description: Optional[str] = Field(None, min_length=1, max_length=500)
+    type: Optional[str] = Field(None, min_length=1, max_length=50)
+    rarity: Optional[str] = Field(None, pattern=_RARITY_PATTERN)
+    is_active: Optional[bool] = None
 
 
 # =============================================================================

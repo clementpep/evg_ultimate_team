@@ -18,7 +18,9 @@ from app.schemas.pack import (
     PackRewardResponse,
     PackOpenResponse,
     PackHistoryItem,
-    PackCostsResponse
+    PackCostsResponse,
+    PackRewardCreate,
+    PackRewardUpdate,
 )
 from app.utils.logger import logger
 
@@ -144,6 +146,94 @@ def can_open_pack(db: Session, participant_id: int, tier: str) -> Tuple[bool, st
 # =============================================================================
 # Pack Rewards
 # =============================================================================
+
+# =============================================================================
+# Pack Reward Administration (CRUD)
+# =============================================================================
+
+def _validate_tier_rarity(tier: str, rarity: str) -> None:
+    """
+    Ensure a (tier, rarity) pair is actually drawable.
+
+    A reward whose rarity isn't in RARITY_WEIGHTS[tier] would never be selected
+    by select_random_reward, so we reject it up front to avoid silent dead
+    rewards in the catalogue.
+    """
+    if tier not in RARITY_WEIGHTS:
+        raise ValueError(f"Invalid pack tier: {tier}")
+    allowed = RARITY_WEIGHTS[tier]
+    if rarity not in allowed:
+        raise ValueError(
+            f"Rarity '{rarity}' is never drawn for tier '{tier}'. "
+            f"Allowed rarities: {', '.join(allowed.keys())}."
+        )
+
+
+def list_all_rewards(db: Session) -> list[PackReward]:
+    """List every reward (active and inactive) for the admin catalogue."""
+    tier_order = {"bronze": 0, "silver": 1, "gold": 2, "ultimate": 3}
+    rewards = db.query(PackReward).all()
+    return sorted(rewards, key=lambda r: (tier_order.get(r.tier, 99), r.rarity, r.id))
+
+
+def create_reward(db: Session, data: PackRewardCreate) -> PackReward:
+    """Create a new pack reward (admin)."""
+    _validate_tier_rarity(data.tier, data.rarity)
+    reward = PackReward(
+        tier=data.tier,
+        reward_name=data.name,
+        reward_description=data.description,
+        reward_type=data.type,
+        rarity=data.rarity,
+        is_active=data.is_active,
+    )
+    db.add(reward)
+    db.commit()
+    db.refresh(reward)
+    logger.info(f"Pack reward created: {reward.reward_name} ({reward.tier}/{reward.rarity})")
+    return reward
+
+
+def update_reward(db: Session, reward_id: int, data: PackRewardUpdate) -> PackReward:
+    """Update an existing pack reward (admin)."""
+    reward = db.query(PackReward).filter(PackReward.id == reward_id).first()
+    if not reward:
+        raise ValueError(f"Reward with ID {reward_id} not found")
+
+    # Resolve the effective tier/rarity after the patch to validate the pair
+    new_tier = data.tier if data.tier is not None else reward.tier
+    new_rarity = data.rarity if data.rarity is not None else reward.rarity
+    if data.tier is not None or data.rarity is not None:
+        _validate_tier_rarity(new_tier, new_rarity)
+
+    if data.tier is not None:
+        reward.tier = data.tier
+    if data.name is not None:
+        reward.reward_name = data.name
+    if data.description is not None:
+        reward.reward_description = data.description
+    if data.type is not None:
+        reward.reward_type = data.type
+    if data.rarity is not None:
+        reward.rarity = data.rarity
+    if data.is_active is not None:
+        reward.is_active = data.is_active
+
+    db.commit()
+    db.refresh(reward)
+    logger.info(f"Pack reward updated: id={reward_id}")
+    return reward
+
+
+def delete_reward(db: Session, reward_id: int) -> None:
+    """Delete a pack reward (admin)."""
+    reward = db.query(PackReward).filter(PackReward.id == reward_id).first()
+    if not reward:
+        raise ValueError(f"Reward with ID {reward_id} not found")
+    db.delete(reward)
+    db.commit()
+    logger.info(f"Pack reward deleted: id={reward_id}")
+
 
 def get_rewards_by_tier(db: Session, tier: str) -> list[PackReward]:
     """
