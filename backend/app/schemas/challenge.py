@@ -168,41 +168,6 @@ class ChallengeValidation(BaseModel):
 
 
 # =============================================================================
-# Dynamic Generation Schemas
-# =============================================================================
-
-class ChallengeGenerationRequest(BaseModel):
-    """Admin request schema for dynamic EVG challenge generation."""
-
-    count: int = Field(
-        default=6,
-        ge=1,
-        le=20,
-        description="Number of dynamic challenges to generate"
-    )
-    persist: bool = Field(
-        default=False,
-        description="If true, generated challenges are saved to database"
-    )
-    reference_time: Optional[datetime] = Field(
-        default=None,
-        description="Optional UTC datetime used for deterministic generation context"
-    )
-    seed: Optional[int] = Field(
-        default=None,
-        description="Optional random seed for reproducible generation"
-    )
-
-
-class ChallengeGenerationResponse(BaseModel):
-    """Response schema for generated EVG dynamic challenges."""
-
-    generated_count: int
-    persisted: bool
-    challenges: list[dict]
-
-
-# =============================================================================
 # Response Schemas
 # =============================================================================
 
