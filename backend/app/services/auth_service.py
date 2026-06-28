@@ -6,6 +6,7 @@ Handles participant and admin authentication logic.
 
 from sqlalchemy.orm import Session
 from typing import Optional
+from app.config import get_settings
 from app.models import Participant
 from app.schemas.auth import ParticipantLogin, AdminLogin, AuthToken
 from app.utils.security import (
@@ -107,12 +108,14 @@ def authenticate_admin(
     login_data: AdminLogin
 ) -> AuthToken:
     """
-    Authenticate the admin using his participant name and the admin password.
+    Authenticate the admin using the admin password.
 
     The admin is a merged account: Clément is a regular participant flagged
-    is_admin=True. He logs in with his own name ("Clément P.") plus the
-    password-gated admin secret, and receives a combined token (participant type,
-    real participant id, is_admin=True) so he both plays and administrates.
+    is_admin=True. The **password is the secret that gates the privilege**; the
+    username field is only a hint, so any of "Clément P.", the configured
+    technical username, or anything else works as long as the password is right.
+    This makes login resilient to the old "clement" habit and to a migration
+    that hasn't flagged the admin yet (it self-heals the flag).
 
     Args:
         db: Database session
@@ -122,26 +125,33 @@ def authenticate_admin(
         AuthToken carrying the admin's real participant id and is_admin=True
 
     Raises:
-        InvalidCredentialsError: If the participant is not an admin or the
-            password is wrong
-
-    Example:
-        >>> login = AdminLogin(username="Clément P.", password="<admin password>")
-        >>> token = authenticate_admin(db, login)
-        >>> print(token.is_admin, token.user_id)
-        True 2
+        InvalidCredentialsError: If the password is wrong or no admin participant
+            can be resolved.
     """
-    # Find the participant by name (case-insensitive)
-    participant = db.query(Participant).filter(
-        Participant.name.ilike(login_data.username)
-    ).first()
-
-    # Generic error message — don't leak whether the name exists or is an admin
-    if not participant or not participant.is_admin or not verify_admin_password(login_data.password):
+    # The password is the real gate.
+    if not verify_admin_password(login_data.password):
         log_auth_attempt(login_data.username, success=False, is_admin=True)
-        raise InvalidCredentialsError(
-            detail="Invalid admin username or password"
-        )
+        raise InvalidCredentialsError(detail="Invalid admin username or password")
+
+    # Resolve the single admin participant. Prefer the flagged one; otherwise
+    # self-heal by resolving the known admin and flagging him (covers a migration
+    # that didn't set is_admin, or the old technical username).
+    participant = db.query(Participant).filter(Participant.is_admin == True).first()  # noqa: E712
+    if participant is None:
+        settings = get_settings()
+        for candidate in (login_data.username, "Clément P.", settings.admin_username):
+            participant = db.query(Participant).filter(
+                Participant.name.ilike(candidate)
+            ).first()
+            if participant is not None:
+                break
+        if participant is not None and not participant.is_admin:
+            participant.is_admin = True
+            db.commit()
+
+    if participant is None:
+        log_auth_attempt(login_data.username, success=False, is_admin=True)
+        raise InvalidCredentialsError(detail="Invalid admin username or password")
 
     # The admin plays too: grant his welcome pack on first login like everyone else
     _grant_welcome_pack_if_needed(db, participant)
