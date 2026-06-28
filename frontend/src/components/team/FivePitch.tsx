@@ -7,10 +7,10 @@
  */
 
 import { ParticipantSummary } from '@/types/participant';
-import { MAX_TEAM_SIZE, MAX_BENCH_SIZE } from '@/types/team';
+import { MAX_TEAM_SIZE, MAX_BENCH_SIZE, MAX_REFEREE_SIZE } from '@/types/team';
 import { PlayerChip } from './PlayerChip';
 
-export type PitchZone = 'A' | 'B' | 'bench' | 'pool';
+export type PitchZone = 'A' | 'B' | 'bench' | 'referee' | 'pool';
 
 interface FivePitchProps {
   teamAName: string;
@@ -18,6 +18,7 @@ interface FivePitchProps {
   teamA: ParticipantSummary[];
   teamB: ParticipantSummary[];
   bench: ParticipantSummary[];
+  referee: ParticipantSummary[];
   unplaced: ParticipantSummary[];
   editMode: boolean;
   selectedId: number | null;
@@ -95,6 +96,7 @@ export const FivePitch: React.FC<FivePitchProps> = ({
   teamA,
   teamB,
   bench,
+  referee,
   unplaced,
   editMode,
   selectedId,
@@ -103,6 +105,7 @@ export const FivePitch: React.FC<FivePitchProps> = ({
 }) => {
   const hasSelection = selectedId !== null;
   const benchFree = Math.max(0, MAX_BENCH_SIZE - bench.length);
+  const refereeFree = Math.max(0, MAX_REFEREE_SIZE - referee.length);
 
   return (
     <div className="space-y-6">
@@ -139,6 +142,31 @@ export const FivePitch: React.FC<FivePitchProps> = ({
             onPlayerClick={onPlayerClick}
             onZoneClick={onZoneClick}
           />
+        </div>
+      </div>
+
+      {/* Referee */}
+      <div
+        className="rounded-xl p-3 sm:p-4 border"
+        style={{ background: 'rgba(66, 56, 16, 0.55)', borderColor: 'rgba(212, 175, 55, 0.35)' }}
+        onClick={editMode && hasSelection ? () => onZoneClick('referee') : undefined}
+      >
+        <div className="text-text-secondary text-xs sm:text-sm uppercase tracking-wide mb-2">
+          🟨 Arbitre · {referee.length}/{MAX_REFEREE_SIZE}
+        </div>
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-4 min-h-[7rem] items-center">
+          {referee.map((p) => (
+            <div key={p.id} onClick={(e) => { e.stopPropagation(); onPlayerClick(p); }}>
+              <PlayerChip participant={p} size="md" selected={selectedId === p.id} />
+            </div>
+          ))}
+          {editMode &&
+            Array.from({ length: refereeFree }).map((_, i) => (
+              <EmptySlot key={`ref-${i}`} active={hasSelection} onClick={() => onZoneClick('referee')} />
+            ))}
+          {!editMode && referee.length === 0 && (
+            <span className="text-text-secondary text-sm">Pas d'arbitre désigné</span>
+          )}
         </div>
       </div>
 

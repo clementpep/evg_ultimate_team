@@ -12,9 +12,10 @@ from datetime import datetime
 from app.schemas.participant import ParticipantSummary
 
 
-# Limits for the five-a-side format (2x5 starters + bench of 3)
+# Limits for the five-a-side format (2x5 starters + 1 referee + bench of 3)
 MAX_TEAM_SIZE = 5
 MAX_BENCH_SIZE = 3
+MAX_REFEREE_SIZE = 1
 
 
 class TeamCompositionUpdate(BaseModel):
@@ -28,6 +29,7 @@ class TeamCompositionUpdate(BaseModel):
     team_a: list[int] = Field(default_factory=list, description="Team A starter IDs (max 5)")
     team_b: list[int] = Field(default_factory=list, description="Team B starter IDs (max 5)")
     bench: list[int] = Field(default_factory=list, description="Bench substitute IDs (max 3)")
+    referee: list[int] = Field(default_factory=list, description="Referee ID (max 1)")
     team_a_name: Optional[str] = Field(None, max_length=50, description="Team A display name")
     team_b_name: Optional[str] = Field(None, max_length=50, description="Team B display name")
 
@@ -36,7 +38,8 @@ class TeamCompositionUpdate(BaseModel):
             "example": {
                 "team_a": [1, 3, 5, 7, 9],
                 "team_b": [2, 4, 6, 8, 10],
-                "bench": [11, 12, 13],
+                "bench": [11, 12],
+                "referee": [13],
                 "team_a_name": "Les Bleus",
                 "team_b_name": "Les Rouges",
             }
@@ -50,8 +53,9 @@ class TeamCompositionResponse(BaseModel):
     team_a: list[ParticipantSummary]
     team_b: list[ParticipantSummary]
     bench: list[ParticipantSummary]
+    referee: list[ParticipantSummary]
     unplaced: list[ParticipantSummary] = Field(
-        ..., description="Participants not yet placed in a team or on the bench"
+        ..., description="Participants not yet placed in a team, on the bench or as referee"
     )
     updated_at: Optional[datetime] = None
 

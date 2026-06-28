@@ -93,6 +93,49 @@
 - [x] Table `team_composition` confirmée enregistrée pour `create_all`.
 - [ ] **Manuel (à faire par Clément)** : login Paul → découverte 12 cartes → compose 2×5 + banc → recharge en tant qu'autre joueur → compo visible.
 
+# PLAN — Simplification packs + nettoyage perf + arbitre 5v5 (2026-06-28)
+
+> Spec : `docs/superpowers/specs/2026-06-28-pack-simplification-and-referee-design.md`
+> Branche : `feat/pack-simplification-and-referee`. DB resettable.
+
+## Chantier A — Simplification & perf
+- [x] A1. Supprimé `experience_service.py` + route `/challenges/generate/contextual` + schémas + export + tests liés
+- [x] A2. `open_pack` → `select_random_reward` ; rareté dynamique supprimée + tests adaptés
+- [x] A3. `PackOpeningModal` : confettis 80-120 → 20-30
+- [x] Commit A (`0822704`) — net −442 lignes
+
+## Chantier B — Refonte packs
+- [x] B1. 24 récompenses réécrites (FR, mini-défis + petits avantages) dans `seed.py`, rarités alignées (6/tier, toutes atteignables)
+- [x] B2. `seed_pack_rewards.py` réutilise `PACK_REWARDS` + mode `--force` (purge+reseed)
+- [x] Commit B
+
+## Chantier C — Arbitre 5v5
+- [x] C1. Backend : colonne `referee` + schéma (`MAX_REFEREE_SIZE`) + validations service
+- [x] C2. Front : zone Arbitre dans `FivePitch` + câblage `EVGTeamPage` + types
+- [x] Commit C
+
+## Vérification finale
+- [x] `pytest` 20/20 · `tsc --noEmit` OK + `npm run build` OK
+- [ ] Test manuel Clément (reset DB + compo arbitre)
+
+## Review (session 2026-06-28)
+- **A** : retiré le générateur de défis dynamiques (anglais + debug `[Context:]`) et la pondération
+  de rareté dynamique (nuit/pity) — sur-ingénierie inutile à 13 joueurs. Tirage simple par poids fixes.
+  Confettis du modal divisés par ~4 pour la fluidité mobile.
+- **B** : packs allégés — fini cartes cadeaux/vols massifs/gages lourds. `seed.py` = source unique
+  du catalogue ; le script manuel le réutilise (plus de duplication désynchronisée).
+- **C** : arbitre ajouté proprement au 5v5 existant (zone tap-to-place, ≤1, unicité globale).
+- **⚠ Reset DB requis** avant déploiement : la colonne `referee` et le nouveau catalogue n'apparaissent
+  qu'après recréation du schéma (`create_all` n'altère pas une table existante).
+  Procédure : arrêter l'app → supprimer la base (ou DROP des tables `team_composition` + `pack_rewards`)
+  → redémarrer (auto-seed) ; ou `python scripts/seed_pack_rewards.py --force` pour seulement re-seeder les packs.
+
+---
+
+### Session 2026-06-07 — Découverte d'équipe + Five 5v5
+
+---
+
 ### Session 2026-06-07 — Découverte d'équipe + Five 5v5
 - **Branche** : `feat/squad-discovery-and-five`.
 - **Backend** : table `team_composition` (mono-ligne), service+validations, endpoints `GET/PUT /api/team/composition`, guard `require_groom_or_admin`. Pas de migration manuelle (create_all).

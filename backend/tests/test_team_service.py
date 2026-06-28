@@ -86,3 +86,28 @@ def test_partial_composition_is_allowed(db):
     assert len(comp.team_a) == 2
     assert len(comp.team_b) == 1
     assert len(comp.unplaced) == 10
+
+
+def test_update_composition_places_referee_and_excludes_from_unplaced(db):
+    data = TeamCompositionUpdate(
+        team_a=[1, 2, 3, 4, 5],
+        team_b=[6, 7, 8, 9, 10],
+        bench=[11, 12],
+        referee=[13],
+    )
+    comp = team_service.update_composition(db, data, editor_id=1)
+
+    assert [p.id for p in comp.referee] == [13]
+    assert comp.unplaced == []
+
+
+def test_update_composition_rejects_two_referees(db):
+    data = TeamCompositionUpdate(referee=[1, 2])
+    with pytest.raises(ValueError):
+        team_service.update_composition(db, data)
+
+
+def test_referee_cannot_also_be_a_player(db):
+    data = TeamCompositionUpdate(team_a=[1], referee=[1])
+    with pytest.raises(ValueError):
+        team_service.update_composition(db, data)

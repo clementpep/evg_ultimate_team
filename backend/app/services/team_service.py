@@ -16,6 +16,7 @@ from app.schemas.team import (
     TeamCompositionResponse,
     MAX_TEAM_SIZE,
     MAX_BENCH_SIZE,
+    MAX_REFEREE_SIZE,
 )
 from app.utils.logger import logger
 
@@ -32,6 +33,7 @@ def _get_or_create_row(db: Session) -> TeamComposition:
             team_a=[],
             team_b=[],
             bench=[],
+            referee=[],
         )
         db.add(row)
         db.commit()
@@ -59,7 +61,8 @@ def get_composition(db: Session) -> TeamCompositionResponse:
     team_a_ids = list(row.team_a or [])
     team_b_ids = list(row.team_b or [])
     bench_ids = list(row.bench or [])
-    placed = set(team_a_ids) | set(team_b_ids) | set(bench_ids)
+    referee_ids = list(row.referee or [])
+    placed = set(team_a_ids) | set(team_b_ids) | set(bench_ids) | set(referee_ids)
 
     unplaced = [ParticipantSummary.model_validate(p) for p in participants if p.id not in placed]
 
@@ -69,6 +72,7 @@ def get_composition(db: Session) -> TeamCompositionResponse:
         team_a=_resolve(team_a_ids, by_id),
         team_b=_resolve(team_b_ids, by_id),
         bench=_resolve(bench_ids, by_id),
+        referee=_resolve(referee_ids, by_id),
         unplaced=unplaced,
         updated_at=row.updated_at,
     )
@@ -96,8 +100,10 @@ def update_composition(
         raise ValueError(f"Une équipe ne peut compter plus de {MAX_TEAM_SIZE} joueurs")
     if len(data.bench) > MAX_BENCH_SIZE:
         raise ValueError(f"Le banc ne peut compter plus de {MAX_BENCH_SIZE} joueurs")
+    if len(data.referee) > MAX_REFEREE_SIZE:
+        raise ValueError("Il ne peut y avoir qu'un seul arbitre")
 
-    all_ids = list(data.team_a) + list(data.team_b) + list(data.bench)
+    all_ids = list(data.team_a) + list(data.team_b) + list(data.bench) + list(data.referee)
 
     # Uniqueness across all three lists
     if len(all_ids) != len(set(all_ids)):
@@ -116,6 +122,7 @@ def update_composition(
     row.team_a = list(data.team_a)
     row.team_b = list(data.team_b)
     row.bench = list(data.bench)
+    row.referee = list(data.referee)
     if data.team_a_name is not None:
         row.team_a_name = data.team_a_name.strip() or row.team_a_name
     if data.team_b_name is not None:
@@ -127,7 +134,8 @@ def update_composition(
 
     logger.info(
         f"Team composition updated by {editor_id}: "
-        f"A={len(row.team_a)} B={len(row.team_b)} bench={len(row.bench)}"
+        f"A={len(row.team_a)} B={len(row.team_b)} bench={len(row.bench)} "
+        f"referee={len(row.referee)}"
     )
 
     return get_composition(db)

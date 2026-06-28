@@ -193,44 +193,52 @@ def seed_challenges(db: Session) -> None:
     logger.info(f"✓ Created {len(challenges_data)} challenges")
 
 
+# =============================================================================
+# Pack rewards catalogue — single source of truth
+# =============================================================================
+# Rarities MUST match RARITY_WEIGHTS in pack_service.py, otherwise a reward is
+# never drawn (bronze=common · silver=common/rare · gold=rare/epic ·
+# ultimate=epic/legendary). Rewards are intentionally light & fun: quick dares
+# and small in-game perks, nothing material or heavy — the EVG moves fast.
+
+PACK_REWARDS = [
+    # ----- Bronze — gages express (common) -----
+    {"tier": "bronze", "name": "Cul-sec", "description": "Termine ton verre cul-sec, là, maintenant.", "type": "power", "rarity": "common"},
+    {"tier": "bronze", "name": "Commande mimée", "description": "Commande ta prochaine boisson uniquement en mimant, sans parler.", "type": "power", "rarity": "common"},
+    {"tier": "bronze", "name": "Accent marseillais", "description": "Parle avec l'accent marseillais pendant 10 minutes. « Putaing ! »", "type": "power", "rarity": "common"},
+    {"tier": "bronze", "name": "DJ du moment", "description": "Choisis la musique du groupe pendant 15 minutes.", "type": "power", "rarity": "common"},
+    {"tier": "bronze", "name": "Photo ridicule", "description": "Organise une photo de groupe dans la pose la plus ridicule possible.", "type": "power", "rarity": "common"},
+    {"tier": "bronze", "name": "Trinque générale", "description": "Trinque avec tout le monde avant ta prochaine gorgée.", "type": "power", "rarity": "common"},
+
+    # ----- Silver — gage + petit avantage (common/rare) -----
+    {"tier": "silver", "name": "×2 prochain défi", "description": "Double tes points sur ton prochain défi validé.", "type": "power", "rarity": "common"},
+    {"tier": "silver", "name": "Skip pénalité", "description": "Annule la prochaine pénalité qui te vise.", "type": "immunity", "rarity": "common"},
+    {"tier": "silver", "name": "Mini-speech", "description": "Fais un discours de 30 secondes sur Paul, debout sur une chaise.", "type": "power", "rarity": "common"},
+    {"tier": "silver", "name": "Tournée d'eau", "description": "Offre une tournée (eau, soft ou shot) à 3 personnes de ton choix.", "type": "shot", "rarity": "rare"},
+    {"tier": "silver", "name": "Échange de place", "description": "Échange ta place (table, voiture…) avec qui tu veux pendant 30 minutes.", "type": "power", "rarity": "rare"},
+    {"tier": "silver", "name": "Imitation", "description": "Imite un autre participant jusqu'à ce que le groupe devine qui c'est.", "type": "power", "rarity": "rare"},
+
+    # ----- Gold — avantages sympas (rare/epic) -----
+    {"tier": "gold", "name": "Immunité 1h", "description": "Aucune pénalité ne peut te toucher pendant 1 heure.", "type": "immunity", "rarity": "rare"},
+    {"tier": "gold", "name": "Capitaine d'un soir", "description": "Tu choisis le prochain défi d'équipe.", "type": "power", "rarity": "rare"},
+    {"tier": "gold", "name": "Service royal", "description": "Paul t'apporte ta prochaine boisson.", "type": "power", "rarity": "rare"},
+    {"tier": "gold", "name": "+50 crédits", "description": "Bonus de 50 crédits pour ouvrir plus de packs.", "type": "power", "rarity": "epic"},
+    {"tier": "gold", "name": "Maître du gage", "description": "Assigne un petit gage fun à la personne de ton choix.", "type": "power", "rarity": "epic"},
+    {"tier": "gold", "name": "Photographe officiel", "description": "Tout le monde doit refaire la photo que tu demandes.", "type": "power", "rarity": "epic"},
+
+    # ----- Ultimate — spécial mais léger (epic/legendary) -----
+    {"tier": "ultimate", "name": "Thème de l'apéro", "description": "Tu choisis le thème du prochain apéro.", "type": "power", "rarity": "epic"},
+    {"tier": "ultimate", "name": "Paul porte ton maillot", "description": "Paul porte ton maillot ou un accessoire à toi pendant 30 minutes.", "type": "power", "rarity": "epic"},
+    {"tier": "ultimate", "name": "Immunité corvée", "description": "Aucune corvée pour toi dimanche matin.", "type": "immunity", "rarity": "legendary"},
+    {"tier": "ultimate", "name": "Photo trophée", "description": "Photo « trophée » mise en scène avec Paul, façon vainqueur.", "type": "power", "rarity": "legendary"},
+    {"tier": "ultimate", "name": "Joker", "description": "Annule un gage ou une pénalité, pour toi ou un pote.", "type": "wildcard", "rarity": "legendary"},
+    {"tier": "ultimate", "name": "Capitaine de soirée", "description": "Tu décides de la prochaine activité du groupe.", "type": "power", "rarity": "legendary"},
+]
+
+
 def seed_rewards(db: Session) -> None:
-    """Seed the database with pack rewards (en français)."""
-    rewards_data = [
-        # Bronze Pack Rewards (common/rare)
-        {"tier": "bronze", "name": "Shot offert", "description": "Un shot gratuit au prochain bar", "type": "shot", "rarity": "common"},
-        {"tier": "bronze", "name": "Skip une pénalité", "description": "Annule une pénalité à venir", "type": "immunity", "rarity": "common"},
-        {"tier": "bronze", "name": "Choix musical 1h", "description": "Choisis la musique pendant 1 heure", "type": "power", "rarity": "common"},
-        {"tier": "bronze", "name": "Joker conversation", "description": "Force quelqu'un à parler uniquement en rimes pendant 10 minutes", "type": "power", "rarity": "rare"},
-        {"tier": "bronze", "name": "Échange de boisson", "description": "Force un échange de verre avec la personne de ton choix", "type": "power", "rarity": "rare"},
-
-        # Silver Pack Rewards (common/rare/epic)
-        {"tier": "silver", "name": "Assigne un défi à quelqu'un", "description": "Crée et assigne un défi personnalisé à un participant", "type": "power", "rarity": "common"},
-        {"tier": "silver", "name": "Points x2 sur le prochain défi", "description": "Double tes points sur ton prochain défi complété", "type": "power", "rarity": "common"},
-        {"tier": "silver", "name": "Paul te sert pendant 2h", "description": "Paul devient ton serveur personnel pendant 2 heures", "type": "power", "rarity": "rare"},
-        {"tier": "silver", "name": "Vol de 50 points", "description": "Vole 50 points au participant de ton choix", "type": "power", "rarity": "rare"},
-        {"tier": "silver", "name": "Immunité samedi soir", "description": "Aucune pénalité ne peut te toucher samedi soir", "type": "immunity", "rarity": "rare"},
-        {"tier": "silver", "name": "Téléphone de Paul pendant 1h", "description": "Tu contrôles le téléphone de Paul pendant 1 heure", "type": "power", "rarity": "epic"},
-        {"tier": "silver", "name": "Swap de défi", "description": "Échange ton défi en cours avec celui d'un autre participant", "type": "power", "rarity": "epic"},
-
-        # Gold Pack Rewards (rare/epic/legendary)
-        {"tier": "gold", "name": "Immunité dimanche matin", "description": "Total immunity dimanche matin (pas de corvées, pas de pénalités)", "type": "immunity", "rarity": "rare"},
-        {"tier": "gold", "name": "Choisis l'activité bonus", "description": "Décide de l'activité bonus du groupe", "type": "power", "rarity": "rare"},
-        {"tier": "gold", "name": "Paul fait ton lit demain", "description": "Paul doit faire ton lit le lendemain matin", "type": "power", "rarity": "rare"},
-        {"tier": "gold", "name": "Vol de 100 points", "description": "Vole 100 points au participant de ton choix", "type": "power", "rarity": "epic"},
-        {"tier": "gold", "name": "Défi MVP", "description": "Si tu complètes ton prochain défi, tu gagnes 3x les points", "type": "power", "rarity": "epic"},
-        {"tier": "gold", "name": "Bouteille premium", "description": "Une bouteille haut de gamme au choix au prochain bar", "type": "shot", "rarity": "legendary"},
-        {"tier": "gold", "name": "Wildcard suprême", "description": "Annule n'importe quel défi ou pénalité pour n'importe qui, y compris toi", "type": "wildcard", "rarity": "legendary"},
-
-        # Ultimate Pack Rewards (epic/legendary)
-        {"tier": "ultimate", "name": "Carte cadeau 100€", "description": "Carte cadeau de 100€ pour un magasin au choix", "type": "shot", "rarity": "legendary"},
-        {"tier": "ultimate", "name": "Paul porte ton accessoire 1h", "description": "Paul doit porter un accessoire de ton choix pendant 1 heure (chapeau, écharpe, etc.)", "type": "power", "rarity": "epic"},
-        {"tier": "ultimate", "name": "Objet de collection", "description": "Un objet de collection rare (maillot dédicacé, figurine, etc.)", "type": "shot", "rarity": "legendary"},
-        {"tier": "ultimate", "name": "Vol de 200 points", "description": "Vole 200 points au participant de ton choix", "type": "power", "rarity": "legendary"},
-        {"tier": "ultimate", "name": "Wildcard absolu", "description": "Annule n'importe quel défi, pénalité ou événement pour tous les participants", "type": "wildcard", "rarity": "legendary"},
-        {"tier": "ultimate", "name": "Protection totale", "description": "Immunité complète pour tout le weekend - rien ne peut te toucher", "type": "immunity", "rarity": "legendary"},
-    ]
-
-    for data in rewards_data:
+    """Seed the database with the fun, lightweight pack rewards (en français)."""
+    for data in PACK_REWARDS:
         reward = PackReward(
             tier=data["tier"],
             reward_name=data["name"],
@@ -242,7 +250,7 @@ def seed_rewards(db: Session) -> None:
         db.add(reward)
 
     db.commit()
-    logger.info(f"✓ Created {len(rewards_data)} pack rewards")
+    logger.info(f"✓ Created {len(PACK_REWARDS)} pack rewards")
 
 
 def auto_seed_if_empty(db: Session) -> None:

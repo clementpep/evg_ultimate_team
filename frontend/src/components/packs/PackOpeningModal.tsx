@@ -201,8 +201,10 @@ export const PackOpeningModal: React.FC<PackOpeningModalProps> = ({
         {/* Golden Confetti system - Fine golden confetti like PlayerCardReveal */}
         {phase === 'celebration' && (
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {[...Array(isLegendary ? 120 : 80)].map((_, i) => {
-              const angle = (i / 100) * Math.PI * 2;
+            {(() => {
+              const confettiCount = isLegendary ? 30 : 20;
+              return [...Array(confettiCount)].map((_, i) => {
+              const angle = (i / confettiCount) * Math.PI * 2;
               const distance = 200 + Math.random() * 250;  // More dispersed
               const x = Math.cos(angle) * distance;
               const y = Math.sin(angle) * distance;
@@ -245,7 +247,8 @@ export const PackOpeningModal: React.FC<PackOpeningModalProps> = ({
                   }}
                 />
               );
-            })}
+              });
+            })()}
           </div>
         )}
 

@@ -16,13 +16,14 @@ import { useToast } from '@context/ToastContext';
 import { getTeamComposition, updateTeamComposition } from '@services/teamService';
 import { getAvatarUrl, getDefaultAvatarUrl } from '@utils/avatarUtils';
 import { ParticipantSummary } from '@/types/participant';
-import { TeamComposition, MAX_TEAM_SIZE, MAX_BENCH_SIZE } from '@/types/team';
+import { TeamComposition, MAX_TEAM_SIZE, MAX_BENCH_SIZE, MAX_REFEREE_SIZE } from '@/types/team';
 import { FivePitch, PitchZone } from '@components/team/FivePitch';
 
 interface WorkState {
   A: number[];
   B: number[];
   bench: number[];
+  referee: number[];
   aName: string;
   bName: string;
 }
@@ -40,15 +41,19 @@ export const EVGTeamPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedCard, setSelectedCard] = useState<ParticipantSummary | null>(null);
-  const [work, setWork] = useState<WorkState>({ A: [], B: [], bench: [], aName: '', bName: '' });
+  const [work, setWork] = useState<WorkState>({ A: [], B: [], bench: [], referee: [], aName: '', bName: '' });
 
   // Lookup of every participant by id (built from all four lists)
   const allById = useMemo(() => {
     const map = new Map<number, ParticipantSummary>();
     if (composition) {
-      [...composition.team_a, ...composition.team_b, ...composition.bench, ...composition.unplaced].forEach(
-        (p) => map.set(p.id, p)
-      );
+      [
+        ...composition.team_a,
+        ...composition.team_b,
+        ...composition.bench,
+        ...composition.referee,
+        ...composition.unplaced,
+      ].forEach((p) => map.set(p.id, p));
     }
     return map;
   }, [composition]);
@@ -77,6 +82,7 @@ export const EVGTeamPage: React.FC = () => {
       A: composition.team_a.map((p) => p.id),
       B: composition.team_b.map((p) => p.id),
       bench: composition.bench.map((p) => p.id),
+      referee: composition.referee.map((p) => p.id),
       aName: composition.team_a_name,
       bName: composition.team_b_name,
     });
@@ -119,6 +125,7 @@ export const EVGTeamPage: React.FC = () => {
     const A = work.A.filter((x) => x !== id);
     const B = work.B.filter((x) => x !== id);
     const bench = work.bench.filter((x) => x !== id);
+    const referee = work.referee.filter((x) => x !== id);
 
     if (zone === 'A') {
       if (!work.A.includes(id) && A.length >= MAX_TEAM_SIZE) {
@@ -138,10 +145,16 @@ export const EVGTeamPage: React.FC = () => {
         return;
       }
       bench.push(id);
+    } else if (zone === 'referee') {
+      if (!work.referee.includes(id) && referee.length >= MAX_REFEREE_SIZE) {
+        showToast('Il y a déjà un arbitre', 'warning');
+        return;
+      }
+      referee.push(id);
     }
     // zone === 'pool' → already removed from all lists
 
-    setWork({ ...work, A, B, bench });
+    setWork({ ...work, A, B, bench, referee });
     setSelectedId(null);
   };
 
@@ -152,6 +165,7 @@ export const EVGTeamPage: React.FC = () => {
         team_a: work.A,
         team_b: work.B,
         bench: work.bench,
+        referee: work.referee,
         team_a_name: work.aName,
         team_b_name: work.bName,
       });
@@ -187,7 +201,7 @@ export const EVGTeamPage: React.FC = () => {
   const resolve = (ids: number[]): ParticipantSummary[] =>
     ids.map((id) => allById.get(id)).filter((p): p is ParticipantSummary => !!p);
 
-  const placedIds = new Set([...work.A, ...work.B, ...work.bench]);
+  const placedIds = new Set([...work.A, ...work.B, ...work.bench, ...work.referee]);
 
   const display = editMode
     ? {
@@ -196,6 +210,7 @@ export const EVGTeamPage: React.FC = () => {
         teamA: resolve(work.A),
         teamB: resolve(work.B),
         bench: resolve(work.bench),
+        referee: resolve(work.referee),
         unplaced: allOrdered.filter((p) => !placedIds.has(p.id)),
       }
     : {
@@ -204,6 +219,7 @@ export const EVGTeamPage: React.FC = () => {
         teamA: composition.team_a,
         teamB: composition.team_b,
         bench: composition.bench,
+        referee: composition.referee,
         unplaced: composition.unplaced,
       };
 
@@ -216,8 +232,8 @@ export const EVGTeamPage: React.FC = () => {
         </h1>
         <p className="text-text-secondary mt-2">
           {editMode
-            ? 'Sélectionne un joueur puis tape une équipe, le banc ou la zone « non répartis ».'
-            : 'La composition du match 5 contre 5.'}
+            ? 'Sélectionne un joueur puis tape une équipe, le banc, l’arbitre ou « non répartis ». Objectif : 2×5 + 1 arbitre + 2 remplaçants.'
+            : 'La composition du match 5 contre 5 (2×5 + 1 arbitre + 2 remplaçants).'}
         </p>
       </div>
 
@@ -285,6 +301,7 @@ export const EVGTeamPage: React.FC = () => {
         teamA={display.teamA}
         teamB={display.teamB}
         bench={display.bench}
+        referee={display.referee}
         unplaced={display.unplaced}
         editMode={editMode}
         selectedId={selectedId}
