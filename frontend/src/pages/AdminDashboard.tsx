@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Card } from '@components/common/Card';
 import { Button } from '@components/common/Button';
 import { Input } from '@components/common/Input';
+import { ConfirmDialog } from '@components/common/ConfirmDialog';
 import { useAuth } from '@context/AuthContext';
 import { useToast } from '@context/ToastContext';
 import { useChallenges } from '@hooks/useChallenges';
@@ -73,6 +74,8 @@ export const AdminDashboard: React.FC = () => {
   // Danger zone
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [resetConfirmText, setResetConfirmText] = useState('');
+  const [pendingDeleteChallenge, setPendingDeleteChallenge] = useState<any | null>(null);
+  const [pendingDeleteReward, setPendingDeleteReward] = useState<PackRewardAdmin | null>(null);
 
   const refreshParticipants = useCallback(() => {
     getAllParticipants().then(setParticipants).catch(() => {});
@@ -158,7 +161,6 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const removeChallenge = async (id: number) => {
-    if (!window.confirm('Supprimer ce défi ?')) return;
     try {
       await deleteChallenge(id);
       showToast('Défi supprimé', 'success');
@@ -169,6 +171,8 @@ export const AdminDashboard: React.FC = () => {
       refetchChallenges();
     } catch {
       showToast('Erreur lors de la suppression', 'error');
+    } finally {
+      setPendingDeleteChallenge(null);
     }
   };
 
@@ -221,7 +225,6 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const removeReward = async (id: number) => {
-    if (!window.confirm('Supprimer cette récompense ?')) return;
     try {
       await deleteReward(id);
       showToast('Récompense supprimée', 'success');
@@ -232,6 +235,8 @@ export const AdminDashboard: React.FC = () => {
       refreshRewards();
     } catch {
       showToast('Erreur lors de la suppression', 'error');
+    } finally {
+      setPendingDeleteReward(null);
     }
   };
 
@@ -458,7 +463,7 @@ export const AdminDashboard: React.FC = () => {
                   <IoMdCreate />
                 </button>
                 <button
-                  onClick={() => removeChallenge(c.id)}
+                  onClick={() => setPendingDeleteChallenge(c)}
                   className="p-2 rounded-lg text-psg-red hover:bg-psg-red/20"
                   aria-label="Supprimer"
                 >
@@ -602,7 +607,7 @@ export const AdminDashboard: React.FC = () => {
                           <IoMdCreate />
                         </button>
                         <button
-                          onClick={() => removeReward(r.id)}
+                          onClick={() => setPendingDeleteReward(r)}
                           className="p-2 rounded-lg text-psg-red hover:bg-psg-red/20"
                           aria-label="Supprimer"
                         >
@@ -645,6 +650,24 @@ export const AdminDashboard: React.FC = () => {
             ))}
         </div>
       </Card>
+
+      <ConfirmDialog
+        isOpen={!!pendingDeleteChallenge}
+        title="Supprimer le défi"
+        message={pendingDeleteChallenge ? `Le défi « ${pendingDeleteChallenge.title} » sera supprimé définitivement.` : ''}
+        confirmLabel="Supprimer"
+        onCancel={() => setPendingDeleteChallenge(null)}
+        onConfirm={() => pendingDeleteChallenge && removeChallenge(pendingDeleteChallenge.id)}
+      />
+
+      <ConfirmDialog
+        isOpen={!!pendingDeleteReward}
+        title="Supprimer la récompense"
+        message={pendingDeleteReward ? `La récompense « ${pendingDeleteReward.name} » sera supprimée du catalogue.` : ''}
+        confirmLabel="Supprimer"
+        onCancel={() => setPendingDeleteReward(null)}
+        onConfirm={() => pendingDeleteReward && removeReward(pendingDeleteReward.id)}
+      />
 
       {/* ===================== DANGER ZONE ===================== */}
       <Card>

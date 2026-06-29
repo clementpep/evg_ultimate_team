@@ -10,7 +10,7 @@
  * NO SKIP BUTTON - Mandatory viewing for maximum immersion!
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type SyntheticEvent } from 'react';
 import { motion } from 'framer-motion';
 import { getDefaultAvatarUrl } from '@utils/avatarUtils';
 
@@ -291,7 +291,7 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
               : 'drop-shadow(0 0 60px rgba(212, 175, 55, 0.7)) drop-shadow(0 0 30px rgba(255, 215, 0, 0.5))',
         }}
         {...(getCardVariants() as any)}
-        onError={(e) => {
+        onError={(e: SyntheticEvent<HTMLImageElement>) => {
           e.currentTarget.src = getDefaultAvatarUrl();
         }}
       />

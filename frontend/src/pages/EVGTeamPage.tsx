@@ -8,7 +8,7 @@
  *   lineup for everyone to see.
  */
 
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef, type MouseEvent, type SyntheticEvent } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@context/AuthContext';
@@ -18,6 +18,7 @@ import { getAvatarUrl, getDefaultAvatarUrl } from '@utils/avatarUtils';
 import { ParticipantSummary } from '@/types/participant';
 import { TeamComposition, MAX_TEAM_SIZE, MAX_BENCH_SIZE, MAX_REFEREE_SIZE } from '@/types/team';
 import { FivePitch, PitchZone } from '@components/team/FivePitch';
+import { IoMdClose } from 'react-icons/io';
 
 interface WorkState {
   A: number[];
@@ -313,7 +314,7 @@ export const EVGTeamPage: React.FC = () => {
       <AnimatePresence>
         {selectedCard && (
           <motion.div
-            className="fixed inset-0 z-[9999] flex items-center justify-center"
+            className="fixed inset-0 z-[9999] flex items-center justify-center px-3 py-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))]"
             style={{
               background: 'radial-gradient(circle at center, #1A2942 0%, #0A1628 100%)',
               cursor: 'pointer',
@@ -324,10 +325,20 @@ export const EVGTeamPage: React.FC = () => {
             transition={{ duration: 0.3 }}
             onClick={() => setSelectedCard(null)}
           >
-            <motion.img
-              src={getAvatarUrl(selectedCard.name)}
-              alt={selectedCard.name}
-              className="w-80 h-[450px] sm:w-96 sm:h-[540px] object-contain"
+            <div className="relative flex w-full max-w-sm flex-col items-center" onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}>
+              <button
+                type="button"
+                onClick={() => setSelectedCard(null)}
+                className="absolute right-0 top-0 z-10 rounded-2xl bg-black/35 p-2 text-white backdrop-blur transition hover:bg-black/55"
+                aria-label="Fermer"
+              >
+                <IoMdClose className="text-2xl" />
+              </button>
+
+              <motion.img
+                src={getAvatarUrl(selectedCard.name)}
+                alt={selectedCard.name}
+                className="h-[min(72vh,32rem)] w-full max-w-[20rem] object-contain sm:max-w-sm"
               style={{
                 filter: selectedCard.is_groom
                   ? 'drop-shadow(0 0 80px rgba(212, 175, 55, 0.9)) drop-shadow(0 0 40px rgba(255, 215, 0, 0.6))'
@@ -337,10 +348,18 @@ export const EVGTeamPage: React.FC = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ duration: 0.3 }}
-              onError={(e) => {
+              onError={(e: SyntheticEvent<HTMLImageElement>) => {
                 e.currentTarget.src = getDefaultAvatarUrl();
               }}
             />
+
+              <div className="mt-3 rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-center backdrop-blur">
+                <p className="font-display text-lg uppercase tracking-wide text-white">{selectedCard.name}</p>
+                <p className="mt-1 text-xs uppercase tracking-[0.18em] text-white/55">
+                  Touchez en dehors de la carte pour fermer
+                </p>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

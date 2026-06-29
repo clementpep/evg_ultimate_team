@@ -146,7 +146,7 @@ export const PackOpeningModal: React.FC<PackOpeningModalProps> = ({
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden"
+        className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden px-3 py-[max(0.75rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-6"
         style={{
           background: isLegendary
             ? 'radial-gradient(circle at center, #1A2942 0%, #0A1628 100%)'
@@ -252,7 +252,7 @@ export const PackOpeningModal: React.FC<PackOpeningModalProps> = ({
           </div>
         )}
 
-        <div className="relative z-10 text-center px-4">
+        <div className="relative z-10 w-full max-w-2xl text-center px-1 sm:px-4">
           {/* Phase 1: Anticipation - INTENSE */}
           {phase === 'anticipation' && (
             <motion.div
@@ -279,7 +279,7 @@ export const PackOpeningModal: React.FC<PackOpeningModalProps> = ({
             >
               {/* Pack card with intense glow - Responsive sizing */}
               <div
-                className="w-72 h-[400px] sm:w-80 sm:h-[450px] rounded-3xl flex items-center justify-center relative overflow-hidden"
+                className="mx-auto w-[min(78vw,18rem)] h-[min(58vh,25rem)] sm:w-80 sm:h-[450px] rounded-3xl flex items-center justify-center relative overflow-hidden"
                 style={{
                   background: `linear-gradient(135deg, ${config.color} 0%, #000 100%)`,
                   boxShadow: `0 0 100px ${config.glowColor}, 0 0 200px ${config.glowColor}`,
@@ -339,7 +339,7 @@ export const PackOpeningModal: React.FC<PackOpeningModalProps> = ({
 
               {/* Hint text */}
               <motion.p
-                className="mt-6 text-text-secondary text-sm uppercase tracking-widest"
+                className="mt-5 px-4 text-text-secondary text-xs sm:text-sm uppercase tracking-[0.2em]"
                 animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
@@ -371,7 +371,7 @@ export const PackOpeningModal: React.FC<PackOpeningModalProps> = ({
 
               {/* Reward card with ULTRA dynamic animations - z-index 20 for foreground - Responsive */}
               <motion.div
-                className="w-72 h-[400px] sm:w-80 sm:h-[450px] rounded-3xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center relative overflow-hidden"
+                className="mx-auto w-[min(78vw,18rem)] h-[min(58vh,25rem)] sm:w-80 sm:h-[450px] rounded-3xl p-4 sm:p-6 md:p-8 flex flex-col items-center justify-center relative overflow-hidden"
                 style={{
                   background: `linear-gradient(135deg, ${rarityColor}20 0%, #0A1628 100%)`,
                   border: `4px solid ${rarityColor}`,
@@ -448,7 +448,7 @@ export const PackOpeningModal: React.FC<PackOpeningModalProps> = ({
                 </h3>
 
                 {/* Reward description - Responsive */}
-                <p className="text-text-secondary text-sm sm:text-base md:text-lg leading-relaxed max-w-xs text-center px-2 sm:px-4 mb-4 sm:mb-6">
+                <p className="max-h-28 overflow-y-auto text-text-secondary text-sm sm:max-h-none sm:text-base md:text-lg leading-relaxed max-w-xs text-center px-2 sm:px-4 mb-4 sm:mb-6">
                   {result.reward.description}
                 </p>
 
@@ -468,7 +468,7 @@ export const PackOpeningModal: React.FC<PackOpeningModalProps> = ({
               {/* Collect button - ULTRA PREMIUM - Responsive */}
               {phase === 'celebration' && (
                 <motion.button
-                  className="mt-6 sm:mt-8 md:mt-10 px-8 py-3 sm:px-12 sm:py-4 md:px-16 md:py-5 rounded-xl sm:rounded-2xl font-display font-black text-base sm:text-lg md:text-xl uppercase tracking-wider relative overflow-hidden"
+                  className="mt-6 sm:mt-8 md:mt-10 w-full max-w-[20rem] px-8 py-3 sm:px-12 sm:py-4 md:px-16 md:py-5 rounded-xl sm:rounded-2xl font-display font-black text-base sm:text-lg md:text-xl uppercase tracking-wider relative overflow-hidden"
                   style={{
                     background: 'linear-gradient(135deg, #DA291C 0%, #A02115 100%)',
                     boxShadow: '0 10px 40px rgba(218, 41, 28, 0.5), 0 0 60px rgba(218, 41, 28, 0.3)',
@@ -503,6 +503,12 @@ export const PackOpeningModal: React.FC<PackOpeningModalProps> = ({
                     <IoMdCheckmarkCircle className="text-2xl" /> RÉCUPÉRER
                   </span>
                 </motion.button>
+              )}
+
+              {phase === 'celebration' && (
+                <p className="mt-3 text-center text-xs uppercase tracking-[0.18em] text-white/55 sm:text-sm">
+                  Appuie sur le bouton pour fermer
+                </p>
               )}
             </motion.div>
           )}
