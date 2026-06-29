@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from pathlib import Path
 from app.config import get_settings
-from app.database import init_db, get_db, SessionLocal
+from app.database import init_db, get_db, SessionLocal, reset_db
 from app.seed import auto_seed_if_empty, ensure_schema
 from app.routes import (
     auth_router,
@@ -30,6 +30,7 @@ from app.utils.exceptions import EVGException, format_exception_response
 
 # Get settings
 settings = get_settings()
+PROD_RESET_MARKER = Path("/app/data/prod-reset-2026-06-29.done")
 
 
 # =============================================================================
@@ -58,6 +59,13 @@ async def lifespan(app: FastAPI):
     # Initialize database
     init_db()
     logger.info("Database initialized")
+
+    if settings.environment == "production" and not PROD_RESET_MARKER.exists():
+        logger.warning("Production one-shot DB reset requested by deployment marker")
+        reset_db()
+        PROD_RESET_MARKER.parent.mkdir(parents=True, exist_ok=True)
+        PROD_RESET_MARKER.write_text("done\n", encoding="utf-8")
+        logger.warning(f"Production one-shot DB reset completed: {PROD_RESET_MARKER}")
 
     # Auto-seed database if empty
     db = SessionLocal()
