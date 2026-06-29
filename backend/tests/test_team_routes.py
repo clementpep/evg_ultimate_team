@@ -70,12 +70,14 @@ def test_get_composition_any_participant(client):
 
 def test_put_composition_as_groom(client):
     headers = _auth(create_participant_token_data(1, "Paul C.", is_groom=True))
-    payload = {"team_a": [1, 2, 3], "team_b": [4, 5], "bench": [6]}
+    payload = {"team_a": [1, None, 3], "team_b": [4, 5], "bench": [6]}
     res = client.put("/api/team/composition", json=payload, headers=headers)
     assert res.status_code == 200
     data = res.json()["data"]
-    assert [p["id"] for p in data["team_a"]] == [1, 2, 3]
-    assert len(data["unplaced"]) == 13 - 6
+    assert [p["id"] for p in data["team_a"]] == [1, 3]
+    assert data["team_a_slots"][1]["participant"] is None
+    assert data["team_a_slots"][2]["participant"]["id"] == 3
+    assert len(data["unplaced"]) == 13 - 5
 
 
 def test_put_composition_as_admin(client):

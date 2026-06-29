@@ -33,6 +33,14 @@ const shuffle = <T,>(arr: T[]): T[] => {
   return a;
 };
 
+const preloadImage = (src: string): Promise<void> =>
+  new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve();
+    img.onerror = () => resolve();
+    img.src = src;
+  });
+
 export const SquadDiscovery: React.FC<SquadDiscoveryProps> = ({ currentUserId, onComplete }) => {
   const navigate = useNavigate();
   const [phase, setPhase] = useState<Phase>('loading');
@@ -45,6 +53,9 @@ export const SquadDiscovery: React.FC<SquadDiscoveryProps> = ({ currentUserId, o
       try {
         const all = await getLeaderboard();
         const others = shuffle(all.filter((p) => p.id !== currentUserId));
+        await Promise.all(
+          others.map((player) => preloadImage(getAvatarUrl(player.name)))
+        );
         if (active) {
           setPlayers(others);
           setPhase('pack');
@@ -137,10 +148,10 @@ export const SquadDiscovery: React.FC<SquadDiscoveryProps> = ({ currentUserId, o
             <motion.div
               key={current.id}
               className="flex flex-col items-center bg-transparent"
-              initial={{ opacity: 0, scale: 0.6, rotateY: 180 }}
-              animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-              exit={{ opacity: 0, scale: 0.7 }}
-              transition={{ duration: 0.5, ease: [0.33, 1, 0.68, 1] }}
+              initial={{ opacity: 0, scale: 0.92, y: 24 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.97, y: -18 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             >
               <motion.img
                 src={getAvatarUrl(current.name)}

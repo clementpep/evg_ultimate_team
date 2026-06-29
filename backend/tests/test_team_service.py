@@ -32,6 +32,8 @@ def test_get_composition_defaults_to_all_unplaced(db):
     comp = team_service.get_composition(db)
     assert comp.team_a == []
     assert comp.team_b == []
+    assert all(slot.participant is None for slot in comp.team_a_slots)
+    assert all(slot.participant is None for slot in comp.team_b_slots)
     assert comp.bench == []
     assert len(comp.unplaced) == 13
     assert comp.team_a_name == "Les Bleus"
@@ -54,6 +56,11 @@ def test_update_composition_places_players(db):
     assert comp.team_a_name == "PSG"
     # Order within a team is preserved (slot order)
     assert comp.team_a[0].id == 1
+    assert [slot.role for slot in comp.team_a_slots] == [
+        "goalkeeper", "defender", "left_wing", "right_wing", "striker"
+    ]
+    assert comp.team_a_slots[0].participant.id == 1
+    assert comp.team_a_slots[4].participant.id == 5
 
 
 def test_update_composition_rejects_duplicate_player(db):
@@ -81,10 +88,12 @@ def test_update_composition_rejects_unknown_player(db):
 
 
 def test_partial_composition_is_allowed(db):
-    data = TeamCompositionUpdate(team_a=[1, 2], team_b=[3])
+    data = TeamCompositionUpdate(team_a=[1, None, 2], team_b=[3])
     comp = team_service.update_composition(db, data)
     assert len(comp.team_a) == 2
     assert len(comp.team_b) == 1
+    assert comp.team_a_slots[1].participant is None
+    assert comp.team_a_slots[2].participant.id == 2
     assert len(comp.unplaced) == 10
 
 

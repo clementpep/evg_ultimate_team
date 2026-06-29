@@ -6,7 +6,7 @@ response (participants expanded to summaries) exposed to the frontend.
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, Literal
 from datetime import datetime
 
 from app.schemas.participant import ParticipantSummary
@@ -16,6 +16,14 @@ from app.schemas.participant import ParticipantSummary
 MAX_TEAM_SIZE = 5
 MAX_BENCH_SIZE = 3
 MAX_REFEREE_SIZE = 1
+TeamRole = Literal["goalkeeper", "defender", "left_wing", "right_wing", "striker"]
+TEAM_ROLES: list[TeamRole] = ["goalkeeper", "defender", "left_wing", "right_wing", "striker"]
+
+
+class TeamSlotAssignment(BaseModel):
+    """Resolved slot for one fixed five-a-side role."""
+    role: TeamRole
+    participant: Optional[ParticipantSummary] = None
 
 
 class TeamCompositionUpdate(BaseModel):
@@ -26,8 +34,8 @@ class TeamCompositionUpdate(BaseModel):
     groom can save work in progress. A participant ID may appear in at
     most one list.
     """
-    team_a: list[int] = Field(default_factory=list, description="Team A starter IDs (max 5)")
-    team_b: list[int] = Field(default_factory=list, description="Team B starter IDs (max 5)")
+    team_a: list[Optional[int]] = Field(default_factory=list, description="Team A starter IDs by slot order: GK, DEF, LW, RW, ST")
+    team_b: list[Optional[int]] = Field(default_factory=list, description="Team B starter IDs by slot order: GK, DEF, LW, RW, ST")
     bench: list[int] = Field(default_factory=list, description="Bench substitute IDs (max 3)")
     referee: list[int] = Field(default_factory=list, description="Referee ID (max 1)")
     team_a_name: Optional[str] = Field(None, max_length=50, description="Team A display name")
@@ -52,6 +60,8 @@ class TeamCompositionResponse(BaseModel):
     team_b_name: str
     team_a: list[ParticipantSummary]
     team_b: list[ParticipantSummary]
+    team_a_slots: list[TeamSlotAssignment]
+    team_b_slots: list[TeamSlotAssignment]
     bench: list[ParticipantSummary]
     referee: list[ParticipantSummary]
     unplaced: list[ParticipantSummary] = Field(

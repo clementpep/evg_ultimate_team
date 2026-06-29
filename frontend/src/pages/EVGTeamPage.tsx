@@ -1,11 +1,9 @@
 /**
  * EVGTeamPage - Shared 5v5 lineup.
  *
- * - View mode (everyone): the pitch with both teams, the bench and the
- *   not-yet-placed players. Tapping a card opens a full-size view.
- * - Edit mode (Paul the groom, or admin): tap-to-place — select a player,
- *   then tap a zone (team / bench / pool) to move them. Save persists the
- *   lineup for everyone to see.
+ * - View mode (everyone): symmetric five-a-side pitch with explicit roles.
+ * - Edit mode (Paul the groom, or admin): tap a player, then tap a precise
+ *   role slot, the bench, the referee zone or the unplaced pool.
  */
 
 import { useState, useEffect, useMemo, useCallback, useRef, type MouseEvent, type SyntheticEvent } from 'react';
@@ -16,18 +14,45 @@ import { useToast } from '@context/ToastContext';
 import { getTeamComposition, updateTeamComposition } from '@services/teamService';
 import { getAvatarUrl, getDefaultAvatarUrl } from '@utils/avatarUtils';
 import { ParticipantSummary } from '@/types/participant';
-import { TeamComposition, MAX_TEAM_SIZE, MAX_BENCH_SIZE, MAX_REFEREE_SIZE } from '@/types/team';
-import { FivePitch, PitchZone } from '@components/team/FivePitch';
+import {
+  TeamComposition,
+  TeamSlot,
+  TEAM_ROLES,
+  MAX_BENCH_SIZE,
+  MAX_REFEREE_SIZE,
+  type TeamRole,
+} from '@/types/team';
+import { FivePitch, PitchZone, type StarterSlotTarget } from '@components/team/FivePitch';
 import { IoMdClose } from 'react-icons/io';
 
 interface WorkState {
-  A: number[];
-  B: number[];
+  A: Array<number | null>;
+  B: Array<number | null>;
   bench: number[];
   referee: number[];
   aName: string;
   bName: string;
 }
+
+const EMPTY_TEAM_SLOTS: Array<number | null> = TEAM_ROLES.map(() => null);
+
+const roleIndex = (role: TeamRole): number => TEAM_ROLES.indexOf(role);
+
+const normalizeTeamSlots = (slots?: TeamSlot[]): Array<number | null> => {
+  if (!slots || slots.length === 0) return [...EMPTY_TEAM_SLOTS];
+  return TEAM_ROLES.map(
+    (role) => slots.find((slot) => slot.role === role)?.participant?.id ?? null
+  );
+};
+
+const resolveTeamSlots = (
+  ids: Array<number | null>,
+  allById: Map<number, ParticipantSummary>
+): TeamSlot[] =>
+  TEAM_ROLES.map((role, index) => ({
+    role,
+    participant: ids[index] !== null ? allById.get(ids[index]!) ?? null : null,
+  }));
 
 export const EVGTeamPage: React.FC = () => {
   const { user } = useAuth();
@@ -42,9 +67,15 @@ export const EVGTeamPage: React.FC = () => {
   const [saving, setSaving] = useState(false);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [selectedCard, setSelectedCard] = useState<ParticipantSummary | null>(null);
-  const [work, setWork] = useState<WorkState>({ A: [], B: [], bench: [], referee: [], aName: '', bName: '' });
+  const [work, setWork] = useState<WorkState>({
+    A: [...EMPTY_TEAM_SLOTS],
+    B: [...EMPTY_TEAM_SLOTS],
+    bench: [],
+    referee: [],
+    aName: '',
+    bName: '',
+  });
 
-  // Lookup of every participant by id (built from all four lists)
   const allById = useMemo(() => {
     const map = new Map<number, ParticipantSummary>();
     if (composition) {
@@ -80,8 +111,8 @@ export const EVGTeamPage: React.FC = () => {
   const enterEdit = useCallback(() => {
     if (!composition) return;
     setWork({
-      A: composition.team_a.map((p) => p.id),
-      B: composition.team_b.map((p) => p.id),
+      A: normalizeTeamSlots(composition.team_a_slots),
+      B: normalizeTeamSlots(composition.team_b_slots),
       bench: composition.bench.map((p) => p.id),
       referee: composition.referee.map((p) => p.id),
       aName: composition.team_a_name,
@@ -91,7 +122,6 @@ export const EVGTeamPage: React.FC = () => {
     setEditMode(true);
   }, [composition]);
 
-  // Auto-enter edit mode once when arriving from the discovery CTA (/team?edit)
   const autoEditApplied = useRef(false);
   useEffect(() => {
     if (
@@ -119,28 +149,38 @@ export const EVGTeamPage: React.FC = () => {
     }
   };
 
+  const handleStarterSlotClick = ({ team, role }: StarterSlotTarget) => {
+    if (selectedId === null) return;
+    const id = selectedId;
+
+    const A = work.A.map((value) => (value === id ? null : value));
+    const B = work.B.map((value) => (value === id ? null : value));
+    const bench = work.bench.filter((x) => x !== id);
+    const referee = work.referee.filter((x) => x !== id);
+
+    const targetSlots = team === 'A' ? [...A] : [...B];
+    targetSlots[roleIndex(role)] = id;
+
+    setWork({
+      ...work,
+      A: team === 'A' ? targetSlots : A,
+      B: team === 'B' ? targetSlots : B,
+      bench,
+      referee,
+    });
+    setSelectedId(null);
+  };
+
   const handleZoneClick = (zone: PitchZone) => {
     if (selectedId === null) return;
     const id = selectedId;
 
-    const A = work.A.filter((x) => x !== id);
-    const B = work.B.filter((x) => x !== id);
+    const A = work.A.map((value) => (value === id ? null : value));
+    const B = work.B.map((value) => (value === id ? null : value));
     const bench = work.bench.filter((x) => x !== id);
     const referee = work.referee.filter((x) => x !== id);
 
-    if (zone === 'A') {
-      if (!work.A.includes(id) && A.length >= MAX_TEAM_SIZE) {
-        showToast(`${work.aName} est déjà complète (${MAX_TEAM_SIZE})`, 'warning');
-        return;
-      }
-      A.push(id);
-    } else if (zone === 'B') {
-      if (!work.B.includes(id) && B.length >= MAX_TEAM_SIZE) {
-        showToast(`${work.bName} est déjà complète (${MAX_TEAM_SIZE})`, 'warning');
-        return;
-      }
-      B.push(id);
-    } else if (zone === 'bench') {
+    if (zone === 'bench') {
       if (!work.bench.includes(id) && bench.length >= MAX_BENCH_SIZE) {
         showToast(`Le banc est complet (${MAX_BENCH_SIZE})`, 'warning');
         return;
@@ -153,7 +193,6 @@ export const EVGTeamPage: React.FC = () => {
       }
       referee.push(id);
     }
-    // zone === 'pool' → already removed from all lists
 
     setWork({ ...work, A, B, bench, referee });
     setSelectedId(null);
@@ -198,18 +237,22 @@ export const EVGTeamPage: React.FC = () => {
     );
   }
 
-  // Resolve what to display depending on the mode
-  const resolve = (ids: number[]): ParticipantSummary[] =>
-    ids.map((id) => allById.get(id)).filter((p): p is ParticipantSummary => !!p);
+  const resolve = (ids: Array<number | null>): ParticipantSummary[] =>
+    ids
+      .filter((id): id is number => id !== null)
+      .map((id) => allById.get(id))
+      .filter((p): p is ParticipantSummary => !!p);
 
-  const placedIds = new Set([...work.A, ...work.B, ...work.bench, ...work.referee]);
+  const placedIds = new Set(
+    [...work.A, ...work.B, ...work.bench, ...work.referee].filter((id): id is number => id !== null)
+  );
 
   const display = editMode
     ? {
         aName: work.aName,
         bName: work.bName,
-        teamA: resolve(work.A),
-        teamB: resolve(work.B),
+        teamASlots: resolveTeamSlots(work.A, allById),
+        teamBSlots: resolveTeamSlots(work.B, allById),
         bench: resolve(work.bench),
         referee: resolve(work.referee),
         unplaced: allOrdered.filter((p) => !placedIds.has(p.id)),
@@ -217,28 +260,26 @@ export const EVGTeamPage: React.FC = () => {
     : {
         aName: composition.team_a_name,
         bName: composition.team_b_name,
-        teamA: composition.team_a,
-        teamB: composition.team_b,
+        teamASlots: composition.team_a_slots,
+        teamBSlots: composition.team_b_slots,
         bench: composition.bench,
         referee: composition.referee,
         unplaced: composition.unplaced,
       };
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-5xl">
-      {/* Header */}
+    <div className="container mx-auto max-w-6xl px-4 py-8">
       <div className="mb-6 text-center">
         <h1 className="font-display text-3xl sm:text-5xl font-black uppercase tracking-wider text-gradient-psg">
           LE FIVE
         </h1>
-        <p className="text-text-secondary mt-2">
+        <p className="mt-2 text-text-secondary">
           {editMode
-            ? 'Sélectionne un joueur puis tape une équipe, le banc, l’arbitre ou « non répartis ». Objectif : 2×5 + 1 arbitre + 2 remplaçants.'
-            : 'La composition du match 5 contre 5 (2×5 + 1 arbitre + 2 remplaçants).'}
+            ? 'Sélectionne un joueur puis place-le sur un vrai poste : gardien, défenseur, ailier gauche, ailier droit ou attaquant. Objectif : 2×5 + 1 arbitre + 2 remplaçants.'
+            : 'La composition du match 5 contre 5 avec postes fixes et vue symétrique des deux équipes.'}
         </p>
       </div>
 
-      {/* Edit controls */}
       {canEdit && (
         <div className="mb-6 flex flex-wrap items-center justify-center gap-3">
           {!editMode ? (
@@ -265,7 +306,7 @@ export const EVGTeamPage: React.FC = () => {
                 type="button"
                 onClick={cancelEdit}
                 disabled={saving}
-                className="px-6 py-2.5 rounded-xl font-display font-bold uppercase tracking-wide text-white border border-white/20"
+                className="px-6 py-2.5 rounded-xl border border-white/20 font-display font-bold uppercase tracking-wide text-white"
                 style={{ background: 'rgba(255,255,255,0.06)' }}
               >
                 Annuler
@@ -275,42 +316,40 @@ export const EVGTeamPage: React.FC = () => {
         </div>
       )}
 
-      {/* Team name inputs (edit mode) */}
       {editMode && (
-        <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl mx-auto">
+        <div className="mb-6 grid max-w-xl grid-cols-1 gap-3 mx-auto sm:grid-cols-2">
           <input
             value={work.aName}
             onChange={(e) => setWork({ ...work, aName: e.target.value })}
             maxLength={50}
             placeholder="Nom équipe A"
-            className="px-4 py-2 rounded-lg bg-bg-card border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-psg-blue"
+            className="rounded-lg border border-white/10 bg-bg-card px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-psg-blue"
           />
           <input
             value={work.bName}
             onChange={(e) => setWork({ ...work, bName: e.target.value })}
             maxLength={50}
             placeholder="Nom équipe B"
-            className="px-4 py-2 rounded-lg bg-bg-card border border-white/10 text-white focus:outline-none focus:ring-2 focus:ring-psg-red"
+            className="rounded-lg border border-white/10 bg-bg-card px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-psg-red"
           />
         </div>
       )}
 
-      {/* Pitch */}
       <FivePitch
         teamAName={display.aName}
         teamBName={display.bName}
-        teamA={display.teamA}
-        teamB={display.teamB}
+        teamASlots={display.teamASlots}
+        teamBSlots={display.teamBSlots}
         bench={display.bench}
         referee={display.referee}
         unplaced={display.unplaced}
         editMode={editMode}
         selectedId={selectedId}
         onPlayerClick={handlePlayerClick}
+        onStarterSlotClick={handleStarterSlotClick}
         onZoneClick={handleZoneClick}
       />
 
-      {/* Card detail modal (view mode) */}
       <AnimatePresence>
         {selectedCard && (
           <motion.div
@@ -339,19 +378,19 @@ export const EVGTeamPage: React.FC = () => {
                 src={getAvatarUrl(selectedCard.name)}
                 alt={selectedCard.name}
                 className="h-[min(72vh,32rem)] w-full max-w-[20rem] object-contain sm:max-w-sm"
-              style={{
-                filter: selectedCard.is_groom
-                  ? 'drop-shadow(0 0 80px rgba(212, 175, 55, 0.9)) drop-shadow(0 0 40px rgba(255, 215, 0, 0.6))'
-                  : 'drop-shadow(0 0 60px rgba(212, 175, 55, 0.7)) drop-shadow(0 0 30px rgba(255, 215, 0, 0.5))',
-              }}
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              onError={(e: SyntheticEvent<HTMLImageElement>) => {
-                e.currentTarget.src = getDefaultAvatarUrl();
-              }}
-            />
+                style={{
+                  filter: selectedCard.is_groom
+                    ? 'drop-shadow(0 0 80px rgba(212, 175, 55, 0.9)) drop-shadow(0 0 40px rgba(255, 215, 0, 0.6))'
+                    : 'drop-shadow(0 0 60px rgba(212, 175, 55, 0.7)) drop-shadow(0 0 30px rgba(255, 215, 0, 0.5))',
+                }}
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.8, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                onError={(e: SyntheticEvent<HTMLImageElement>) => {
+                  e.currentTarget.src = getDefaultAvatarUrl();
+                }}
+              />
 
               <div className="mt-3 rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-center backdrop-blur">
                 <p className="font-display text-lg uppercase tracking-wide text-white">{selectedCard.name}</p>

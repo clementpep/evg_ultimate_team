@@ -6,11 +6,21 @@
 
 import { ParticipantSummary } from './participant';
 
+export const TEAM_ROLES = ['goalkeeper', 'defender', 'left_wing', 'right_wing', 'striker'] as const;
+export type TeamRole = typeof TEAM_ROLES[number];
+
+export interface TeamSlot {
+  role: TeamRole;
+  participant: ParticipantSummary | null;
+}
+
 export interface TeamComposition {
   team_a_name: string;
   team_b_name: string;
   team_a: ParticipantSummary[];
   team_b: ParticipantSummary[];
+  team_a_slots: TeamSlot[];
+  team_b_slots: TeamSlot[];
   bench: ParticipantSummary[];
   referee: ParticipantSummary[];
   unplaced: ParticipantSummary[];
@@ -18,8 +28,8 @@ export interface TeamComposition {
 }
 
 export interface TeamCompositionUpdate {
-  team_a: number[];
-  team_b: number[];
+  team_a: Array<number | null>;
+  team_b: Array<number | null>;
   bench: number[];
   referee: number[];
   team_a_name?: string;
