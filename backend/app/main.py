@@ -295,10 +295,17 @@ async def serve_spa(full_path: str):
     Catch-all route to serve the React SPA.
 
     This must be the LAST route defined to avoid conflicting with API routes.
-    Returns index.html for all non-API routes to support client-side routing.
+    Returns real built files when they exist (manifest, favicon, top-level images,
+    etc.), otherwise falls back to index.html for client-side routing.
     """
-    # If frontend dist exists, serve index.html
     if FRONTEND_DIST.exists():
+        requested_path = (FRONTEND_DIST / full_path).resolve()
+
+        # Serve real static files from dist when they exist, while preventing
+        # path traversal outside the build directory.
+        if full_path and FRONTEND_DIST.resolve() in requested_path.parents and requested_path.is_file():
+            return FileResponse(requested_path)
+
         index_path = FRONTEND_DIST / "index.html"
         if index_path.exists():
             return FileResponse(index_path)
