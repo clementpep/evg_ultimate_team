@@ -126,7 +126,8 @@ export const SquadDiscovery: React.FC<SquadDiscoveryProps> = ({ currentUserId, o
         <button
           type="button"
           onClick={handleAdvance}
-          className="absolute inset-0 flex flex-col items-center justify-center focus:outline-none"
+          className="absolute inset-0 flex flex-col items-center justify-center border-0 bg-transparent p-0 appearance-none focus:outline-none"
+          style={{ WebkitTapHighlightColor: 'transparent' }}
         >
           <div className="absolute top-8 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-white/10 text-white text-sm font-bold tracking-widest">
             {index + 1} / {total}
@@ -135,7 +136,7 @@ export const SquadDiscovery: React.FC<SquadDiscoveryProps> = ({ currentUserId, o
           <AnimatePresence mode="wait">
             <motion.div
               key={current.id}
-              className="flex flex-col items-center"
+              className="flex flex-col items-center bg-transparent"
               initial={{ opacity: 0, scale: 0.6, rotateY: 180 }}
               animate={{ opacity: 1, scale: 1, rotateY: 0 }}
               exit={{ opacity: 0, scale: 0.7 }}
