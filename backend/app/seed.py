@@ -12,25 +12,39 @@ from app.utils.logger import logger
 
 def ensure_schema(db: Session) -> None:
     """
-    Lightweight, idempotent migrations for SQLite.
+    Lightweight, idempotent migrations for already-deployed databases.
 
     ``create_all`` creates missing tables but never ALTERs existing ones, so
     columns added after the first deploy must be patched in here to avoid a full
     DB reset (and the chicken-and-egg problem where admin login needs a column
     that doesn't exist yet). Currently handles: participants.is_admin.
+
+    Supports SQLite and MySQL/MariaDB, which are the deployed backends used by
+    this project.
     """
     bind = db.get_bind()
-    if bind.dialect.name != "sqlite":
+    dialect = bind.dialect.name
+    if dialect not in {"sqlite", "mysql"}:
         return  # Other backends: rely on a proper migration / reset
 
-    columns = {c["name"] for c in inspect(bind).get_columns("participants")}
+    inspector = inspect(bind)
+    tables = set(inspector.get_table_names())
+    if "participants" not in tables:
+        return
+
+    columns = {c["name"] for c in inspector.get_columns("participants")}
     if "is_admin" not in columns:
         logger.info("Migrating: adding participants.is_admin column")
         db.execute(text(
             "ALTER TABLE participants ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT 0"
         ))
-        # Flag Clément as the admin on pre-existing databases
-        db.execute(text("UPDATE participants SET is_admin = 1 WHERE name = 'Clément P.'"))
+        # Flag Clément as the admin on pre-existing databases. Historical MySQL
+        # imports may have mangled the accent in the stored name, so we also
+        # fall back to the seeded participant id=2 (stable in this project).
+        db.execute(text(
+            "UPDATE participants SET is_admin = 1 "
+            "WHERE name = 'Clément P.' OR id = 2"
+        ))
         db.commit()
         logger.info("Migration complete: participants.is_admin")
 
