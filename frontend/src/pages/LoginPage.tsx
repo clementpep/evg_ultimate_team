@@ -4,6 +4,7 @@ import { useAuth } from '@context/AuthContext';
 import { Button } from '@components/common/Button';
 import { Input } from '@components/common/Input';
 import { Card } from '@components/common/Card';
+import { GiTrophyCup } from 'react-icons/gi';
 
 export const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -33,6 +34,16 @@ export const LoginPage: React.FC = () => {
   return (
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
+        <div className="flex justify-center mb-4">
+          <GiTrophyCup
+            className="text-fifa-gold text-7xl sm:text-8xl"
+            style={{
+              filter:
+                'drop-shadow(0 0 18px rgba(212,175,55,0.65)) drop-shadow(0 0 8px rgba(255,215,0,0.45))',
+            }}
+            aria-label="Trophée EVG Ultimate Team"
+          />
+        </div>
         <h1 className="font-display text-5xl sm:text-6xl font-black text-center mb-3 uppercase tracking-wider text-gradient-psg">
           EVG ULTIMATE TEAM
         </h1>
