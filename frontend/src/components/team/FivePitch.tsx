@@ -4,6 +4,10 @@
  * Presentational only: the parent owns the working composition and the
  * tap-to-place logic. In edit mode, tapping a player selects it and tapping
  * a precise role slot moves the selected player there.
+ *
+ * Layout: the green pitch + markings are a decorative background layer. The
+ * players flow inside a flex column (Team B on the top half, Team A on the
+ * bottom half), so positions can never overlap — even on narrow phones.
  */
 
 import { ParticipantSummary } from '@/types/participant';
@@ -35,111 +39,144 @@ interface FivePitchProps {
 const ROLE_LABELS: Record<TeamRole, string> = {
   goalkeeper: 'Gardien',
   defender: 'Défenseur',
-  left_wing: 'Ailier gauche',
-  right_wing: 'Ailier droit',
+  left_wing: 'Ailier G.',
+  right_wing: 'Ailier D.',
   striker: 'Attaquant',
 };
 
-const SLOT_LAYOUT: Array<{ role: TeamRole; top: string; left: string }> = [
-  { role: 'goalkeeper', top: '81%', left: '50%' },
-  { role: 'defender', top: '61%', left: '50%' },
-  { role: 'left_wing', top: '38%', left: '28%' },
-  { role: 'right_wing', top: '38%', left: '72%' },
-  { role: 'striker', top: '18%', left: '50%' },
+// Rows from each team's own goal line towards the center line.
+const TEAM_A_ROWS: TeamRole[][] = [
+  ['striker'],
+  ['left_wing', 'right_wing'],
+  ['defender'],
+  ['goalkeeper'],
+];
+const TEAM_B_ROWS: TeamRole[][] = [
+  ['goalkeeper'],
+  ['defender'],
+  ['left_wing', 'right_wing'],
+  ['striker'],
 ];
 
-const mirrorTop = (top: string): string => `${100 - Number.parseFloat(top)}%`;
+const SLOT_FOOTPRINT = 'h-[4.5rem] w-14 sm:h-24 sm:w-20';
 
-const EmptySlot: React.FC<{ onClick: () => void; active: boolean; label: string }> = ({ onClick, active, label }) => (
+const EmptySlot: React.FC<{ onClick: () => void; active: boolean; label: string }> = ({
+  onClick,
+  active,
+  label,
+}) => (
   <button
     type="button"
     onClick={onClick}
-    className="flex h-20 w-16 flex-col items-center justify-center rounded-xl border-2 border-dashed px-1 text-center transition-colors sm:h-24 sm:w-20"
+    className={`flex flex-col items-center justify-center rounded-xl border-2 border-dashed px-1 text-center transition-colors ${SLOT_FOOTPRINT}`}
     style={{
-      borderColor: active ? 'rgba(0,255,65,0.85)' : 'rgba(255,255,255,0.28)',
-      background: active ? 'rgba(0,255,65,0.1)' : 'rgba(8,14,28,0.36)',
-      color: active ? 'rgba(0,255,65,0.95)' : 'rgba(255,255,255,0.56)',
-      backdropFilter: 'blur(10px)',
+      borderColor: active ? 'rgba(0,255,65,0.85)' : 'rgba(255,255,255,0.3)',
+      background: active ? 'rgba(0,255,65,0.12)' : 'rgba(8,14,28,0.45)',
+      color: active ? 'rgba(0,255,65,0.95)' : 'rgba(255,255,255,0.6)',
+      backdropFilter: 'blur(8px)',
     }}
     aria-label={`Emplacement libre ${label}`}
   >
-    <span className="text-lg leading-none">+</span>
-    <span className="mt-1 text-[9px] font-bold uppercase tracking-[0.15em]">{label}</span>
+    <span className="text-base leading-none sm:text-lg">+</span>
   </button>
 );
 
-const StarterHalf: React.FC<{
+/** One role position: label on top, then the player card / empty slot / "Vide". */
+const SlotCell: React.FC<{
   team: 'A' | 'B';
-  name: string;
-  color: 'blue' | 'red';
-  slots: TeamSlot[];
+  role: TeamRole;
+  player: ParticipantSummary | null;
   editMode: boolean;
   selectedId: number | null;
   onPlayerClick: (participant: ParticipantSummary) => void;
   onStarterSlotClick: (target: StarterSlotTarget) => void;
-}> = ({ team, name, color, slots, editMode, selectedId, onPlayerClick, onStarterSlotClick }) => {
-  const hasSelection = selectedId !== null;
-  const positions = SLOT_LAYOUT.map((layout) => ({
-    ...layout,
-    top: team === 'A' ? layout.top : mirrorTop(layout.top),
-  }));
+}> = ({ team, role, player, editMode, selectedId, onPlayerClick, onStarterSlotClick }) => (
+  <div className="flex flex-col items-center gap-1">
+    <span className="rounded-full bg-black/45 px-2 py-0.5 text-[8px] font-bold uppercase tracking-[0.12em] text-white/80 backdrop-blur sm:text-[10px]">
+      {ROLE_LABELS[role]}
+    </span>
+    {player ? (
+      <PlayerChip
+        participant={player}
+        size="sm"
+        selected={selectedId === player.id}
+        showPoints={false}
+        onClick={onPlayerClick}
+      />
+    ) : editMode ? (
+      <EmptySlot
+        label={ROLE_LABELS[role]}
+        active={selectedId !== null}
+        onClick={() => onStarterSlotClick({ team, role })}
+      />
+    ) : (
+      <div
+        className={`flex items-center justify-center rounded-xl border border-white/10 bg-black/25 text-[8px] font-bold uppercase tracking-[0.15em] text-white/45 backdrop-blur sm:text-[10px] ${SLOT_FOOTPRINT}`}
+      >
+        Vide
+      </div>
+    )}
+  </div>
+);
 
-  const chipSize = team === 'A' ? 'sm' : 'sm';
+const TeamHalf: React.FC<{
+  team: 'A' | 'B';
+  name: string;
+  color: 'blue' | 'red';
+  slots: TeamSlot[];
+  rows: TeamRole[][];
+  editMode: boolean;
+  selectedId: number | null;
+  onPlayerClick: (participant: ParticipantSummary) => void;
+  onStarterSlotClick: (target: StarterSlotTarget) => void;
+}> = ({ team, name, color, slots, rows, editMode, selectedId, onPlayerClick, onStarterSlotClick }) => {
+  const playerFor = (role: TeamRole) => slots.find((s) => s.role === role)?.participant ?? null;
+
+  const badge = (
+    <div
+      className="mx-auto rounded-full px-4 py-1 text-xs font-display font-bold uppercase tracking-[0.2em] text-white shadow-lg sm:text-sm"
+      style={{
+        background:
+          color === 'blue'
+            ? 'linear-gradient(135deg, rgba(0,65,112,0.95) 0%, rgba(0,30,65,0.95) 100%)'
+            : 'linear-gradient(135deg, rgba(218,41,28,0.95) 0%, rgba(160,33,21,0.95) 100%)',
+        border: '1px solid rgba(255,255,255,0.16)',
+      }}
+    >
+      {name}
+    </div>
+  );
+
+  const rowEls = rows.map((roles, i) => (
+    <div
+      key={`${team}-row-${i}`}
+      className={
+        roles.length > 1
+          ? 'mx-auto flex w-full max-w-[16rem] items-start justify-between px-1 sm:max-w-xs'
+          : 'flex items-start justify-center'
+      }
+    >
+      {roles.map((role) => (
+        <SlotCell
+          key={`${team}-${role}`}
+          team={team}
+          role={role}
+          player={playerFor(role)}
+          editMode={editMode}
+          selectedId={selectedId}
+          onPlayerClick={onPlayerClick}
+          onStarterSlotClick={onStarterSlotClick}
+        />
+      ))}
+    </div>
+  ));
 
   return (
-    <>
-      <div
-        className="absolute left-1/2 z-10 -translate-x-1/2 rounded-full px-4 py-1 text-xs font-display font-bold uppercase tracking-[0.2em] sm:text-sm"
-        style={{
-          top: team === 'A' ? '4%' : 'unset',
-          bottom: team === 'B' ? '4%' : 'unset',
-          background:
-            color === 'blue'
-              ? 'linear-gradient(135deg, rgba(0,65,112,0.95) 0%, rgba(0,30,65,0.95) 100%)'
-              : 'linear-gradient(135deg, rgba(218,41,28,0.95) 0%, rgba(160,33,21,0.95) 100%)',
-          color: '#fff',
-          border: '1px solid rgba(255,255,255,0.14)',
-        }}
-      >
-        {name}
-      </div>
-
-      {positions.map(({ role, top, left }) => {
-        const slot = slots.find((entry) => entry.role === role);
-        const player = slot?.participant ?? null;
-
-        return (
-          <div
-            key={`${team}-${role}`}
-            className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
-            style={{ top, left }}
-          >
-            <div className="mb-1 rounded-full bg-black/35 px-2 py-0.5 text-[9px] font-bold uppercase tracking-[0.18em] text-white/75 backdrop-blur sm:text-[10px]">
-              {ROLE_LABELS[role]}
-            </div>
-            {player ? (
-              <PlayerChip
-                participant={player}
-                size={chipSize}
-                selected={selectedId === player.id}
-                showPoints={false}
-                onClick={onPlayerClick}
-              />
-            ) : editMode ? (
-              <EmptySlot
-                label={ROLE_LABELS[role]}
-                active={hasSelection}
-                onClick={() => onStarterSlotClick({ team, role })}
-              />
-            ) : (
-              <div className="flex h-20 w-16 items-center justify-center rounded-xl border border-white/10 bg-black/20 text-[9px] font-bold uppercase tracking-[0.18em] text-white/45 backdrop-blur sm:h-24 sm:w-20 sm:text-[10px]">
-                Vide
-              </div>
-            )}
-          </div>
-        );
-      })}
-    </>
+    <div className="flex flex-1 flex-col justify-evenly gap-3 py-2">
+      {team === 'B' && badge}
+      {rowEls}
+      {team === 'A' && badge}
+    </div>
   );
 };
 
@@ -166,41 +203,48 @@ export const FivePitch: React.FC<FivePitchProps> = ({
       <div
         className="relative overflow-hidden rounded-[2rem] border"
         style={{
-          minHeight: '42rem',
           background:
             'radial-gradient(circle at center, rgba(20,110,48,0.35) 0%, rgba(9,78,34,0.22) 26%, rgba(10,95,41,0.92) 27%, rgba(11,107,46,0.98) 100%)',
           borderColor: 'rgba(255,255,255,0.15)',
           boxShadow: 'inset 0 0 90px rgba(0,0,0,0.45)',
         }}
       >
-        <div className="absolute inset-[4%] rounded-[1.75rem] border border-white/15" />
-        <div className="absolute left-[14%] top-[7%] h-[18%] w-[72%] rounded-t-[9rem] border border-b-0 border-white/18" />
-        <div className="absolute bottom-[7%] left-[14%] h-[18%] w-[72%] rounded-b-[9rem] border border-t-0 border-white/18" />
-        <div className="absolute left-1/2 top-1/2 h-px w-[86%] -translate-x-1/2 -translate-y-1/2 bg-white/35" />
-        <div className="absolute left-1/2 top-1/2 h-24 w-24 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/35 sm:h-28 sm:w-28" />
-        <div className="absolute left-1/2 top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/60" />
+        {/* Decorative pitch markings (background layer) */}
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-[4%] rounded-[1.75rem] border border-white/15" />
+          <div className="absolute left-[14%] top-[2%] h-[14%] w-[72%] rounded-b-[7rem] border border-t-0 border-white/18" />
+          <div className="absolute bottom-[2%] left-[14%] h-[14%] w-[72%] rounded-t-[7rem] border border-b-0 border-white/18" />
+          <div className="absolute left-1/2 top-1/2 h-px w-[86%] -translate-x-1/2 -translate-y-1/2 bg-white/35" />
+          <div className="absolute left-1/2 top-1/2 h-20 w-20 -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/35 sm:h-28 sm:w-28" />
+          <div className="absolute left-1/2 top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/60" />
+        </div>
 
-        <StarterHalf
-          team="A"
-          name={teamAName}
-          color="blue"
-          slots={teamASlots}
-          editMode={editMode}
-          selectedId={selectedId}
-          onPlayerClick={onPlayerClick}
-          onStarterSlotClick={onStarterSlotClick}
-        />
-
-        <StarterHalf
-          team="B"
-          name={teamBName}
-          color="red"
-          slots={teamBSlots}
-          editMode={editMode}
-          selectedId={selectedId}
-          onPlayerClick={onPlayerClick}
-          onStarterSlotClick={onStarterSlotClick}
-        />
+        {/* Players flow (foreground) — flex column, never overlaps */}
+        <div className="relative z-10 flex min-h-[36rem] flex-col px-2 py-4 sm:min-h-[40rem]">
+          <TeamHalf
+            team="B"
+            name={teamBName}
+            color="red"
+            slots={teamBSlots}
+            rows={TEAM_B_ROWS}
+            editMode={editMode}
+            selectedId={selectedId}
+            onPlayerClick={onPlayerClick}
+            onStarterSlotClick={onStarterSlotClick}
+          />
+          <div className="h-px w-full" />
+          <TeamHalf
+            team="A"
+            name={teamAName}
+            color="blue"
+            slots={teamASlots}
+            rows={TEAM_A_ROWS}
+            editMode={editMode}
+            selectedId={selectedId}
+            onPlayerClick={onPlayerClick}
+            onStarterSlotClick={onStarterSlotClick}
+          />
+        </div>
       </div>
 
       <div
