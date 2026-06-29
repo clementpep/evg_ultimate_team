@@ -81,7 +81,6 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
       markDiscovered(); // Only persist on first login
     }
     setShowDiscovery(false);
-    resetReveal(); // Reset the manual trigger
   };
 
   if (isLoading) {
@@ -104,7 +103,6 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
           isOpen={showReveal}
           username={user.username}
           avatarUrl={getAvatarUrl(user.username)}
-          isReplay={shouldTriggerReveal}
           onComplete={handleRevealComplete}
         />
       )}

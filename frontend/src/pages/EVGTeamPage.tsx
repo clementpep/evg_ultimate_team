@@ -6,7 +6,7 @@
  *   role slot, the bench, the referee zone or the unplaced pool.
  */
 
-import { useState, useEffect, useMemo, useCallback, useRef, type MouseEvent, type SyntheticEvent } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef, type SyntheticEvent } from 'react';
 import { useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@context/AuthContext';
@@ -364,7 +364,7 @@ export const EVGTeamPage: React.FC = () => {
             transition={{ duration: 0.3 }}
             onClick={() => setSelectedCard(null)}
           >
-            <div className="relative flex w-full max-w-sm flex-col items-center" onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}>
+            <div className="relative flex w-full max-w-sm flex-col items-center">
               <button
                 type="button"
                 onClick={() => setSelectedCard(null)}
@@ -395,7 +395,7 @@ export const EVGTeamPage: React.FC = () => {
               <div className="mt-3 rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-center backdrop-blur">
                 <p className="font-display text-lg uppercase tracking-wide text-white">{selectedCard.name}</p>
                 <p className="mt-1 text-xs uppercase tracking-[0.18em] text-white/55">
-                  Touchez en dehors de la carte pour fermer
+                  Touchez pour fermer
                 </p>
               </div>
             </div>

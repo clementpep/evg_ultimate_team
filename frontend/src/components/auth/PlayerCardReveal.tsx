@@ -18,7 +18,6 @@ interface PlayerCardRevealProps {
   isOpen: boolean;
   username: string;
   avatarUrl: string;
-  isReplay?: boolean;
   onComplete: () => void;
 }
 
@@ -28,7 +27,6 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
   isOpen,
   username,
   avatarUrl,
-  isReplay = false,
   onComplete,
 }) => {
   const [phase, setPhase] = useState<AnimationPhase>('entry');
@@ -67,7 +65,7 @@ export const PlayerCardReveal: React.FC<PlayerCardRevealProps> = ({
       clearTimeout(timer2);
       clearTimeout(timer3);
     };
-  }, [isOpen, imageLoaded, isReplay]);
+  }, [isOpen, imageLoaded]);
 
   if (!isOpen) return null;
 
