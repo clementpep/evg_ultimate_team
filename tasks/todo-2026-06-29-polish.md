@@ -35,4 +35,40 @@ Fix the bugs Codex left behind. Clean, functional, mobile-first. Push to main = 
 - [ ] Commit step-by-step, push to main
 
 ## Review
-(to be filled at the end)
+
+All 5 tasks done, build clean, pushed to main (deploy triggered).
+
+- **Icon**: root cause was blank PNGs (gradients never rasterized), not the SVG.
+  Added `scripts/generate-icons.mjs` (@resvg/resvg-js), full-bleed bg for maskable.
+  Verified the rendered 512px PNG = gold cup on PSG gradient.
+- **Pitch**: root cause was both teams positioned across the full height (every
+  role collided). Rebuilt as a flex column over a decorative pitch background.
+  Verified collision-free at 390px width via Playwright screenshot (view + edit).
+- **Discovery**: replaced flat fade with a FUT flip from a branded navy/gold
+  card-back (no black face possible). Verified by build + structural reasoning.
+- **Tap-to-close**: removed stopPropagation; tap anywhere closes; hint fixed.
+- **Cleanup**: removed dead `isReplay`, redundant `resetReveal()`, localhost
+  preconnect, dead `chipSize` ternary, unused `MouseEvent` import.
+
+## Session 2 — Pack experience rework (2026-06-29)
+
+- Integrated AI pack art (bronze/silver/gold/ultimate) + card templates.
+- Compressed all heavy art to WebP (packs/cards ~50-180 KB, FUT cards ~150-190 KB
+  from ~3 MB) via scripts/optimize-assets.mjs. App imports .webp.
+- New shared `PackOpeningExperience`: pack -> burst -> reveal. Contour-safe
+  (object-contain + drop-shadow, no rectangular bg -> kills the gold rectangle).
+  Reward written into tier card template; player reveals use the FUT card.
+- Reliable dismissal (button + tap), not animation-phase-gated -> fixes Android
+  "stuck on card".
+- PlayerCardReveal, PackOpeningModal, SquadDiscovery now delegate to it.
+- First login: everyone opens an Ultimate pack -> own card; Paul then opens the
+  "Pack Équipe" -> sequential teammate reveals -> compose CTA.
+- PackCard redesigned around the real foil art.
+- Verified via Playwright at 390px: pack phase, reward reveal, player reveal,
+  packs grid.
+
+### Follow-ups (not done, flagged to user)
+- 6 player-card/wallpaper assets were modified before this session (left untouched).
+- FUT card PNGs are ~3 MB each (~36 MB total, also duplicated in public/). Worth
+  optimizing for mobile load, but out of scope for this bugfix pass.
+- `react-card-flip` dep appears unused (hand-rolled flip instead).

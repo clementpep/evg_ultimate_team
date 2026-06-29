@@ -1,17 +1,19 @@
 /**
- * SquadDiscovery - Paul's first-login "discover your team" pack experience.
+ * SquadDiscovery - Paul's first-login "discover your team" experience.
  *
- * A single "Pack Équipe" opens and reveals the 12 other participants one by
- * one (tap to advance). Ends with a CTA to go compose the 5v5 lineup.
+ * An Ultimate "Pack Équipe" opens and reveals the 12 other participants one by
+ * one (tap to advance), then a CTA to go compose the 5v5 lineup. Built on the
+ * shared PackOpeningExperience so the visuals/animations match the rest of the
+ * app and stay reliable on every device.
  *
  * Groom-only; gated by useSquadDiscovery (localStorage).
  */
 
-import { useState, useEffect, type SyntheticEvent } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getLeaderboard } from '@services/leaderboardService';
-import { getAvatarUrl, getDefaultAvatarUrl } from '@utils/avatarUtils';
+import { getAvatarUrl } from '@utils/avatarUtils';
+import { PackOpeningExperience, RevealItem } from '@components/packs/PackOpeningExperience';
 import { ParticipantWithRank } from '@/types/participant';
 
 interface SquadDiscoveryProps {
@@ -19,9 +21,6 @@ interface SquadDiscoveryProps {
   onComplete: () => void;
 }
 
-type Phase = 'loading' | 'pack' | 'revealing' | 'done';
-
-// Deterministic-but-shuffled order so the reveal feels random each squad
 const shuffle = <T,>(arr: T[]): T[] => {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -33,114 +32,41 @@ const shuffle = <T,>(arr: T[]): T[] => {
   return a;
 };
 
-const preloadImage = (src: string): Promise<void> =>
-  new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve();
-    img.onerror = () => resolve();
-    img.src = src;
-  });
-
-/**
- * FlipCard - FUT-style reveal: the card mounts face-down (branded navy/gold
- * back) and flips to reveal the player's FUT card. Both faces use
- * backface-visibility:hidden so the rotation never exposes a blank/black face.
- */
-const FlipCard: React.FC<{ name: string; src: string }> = ({ name, src }) => (
-  <div style={{ perspective: 1400 }}>
-    <motion.div
-      className="relative h-[400px] w-72 sm:h-[450px] sm:w-80"
-      style={{ transformStyle: 'preserve-3d' }}
-      initial={{ rotateY: 180, scale: 0.82 }}
-      animate={{ rotateY: 0, scale: 1 }}
-      transition={{
-        rotateY: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
-        scale: { duration: 0.65, ease: [0.34, 1.3, 0.64, 1] },
-      }}
-    >
-      {/* Front — the player's FUT card */}
-      <div
-        className="absolute inset-0 flex items-center justify-center"
-        style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
-      >
-        <img
-          src={src}
-          alt={name}
-          className="h-full w-full object-contain"
-          style={{
-            filter:
-              'drop-shadow(0 0 60px rgba(212, 175, 55, 0.7)) drop-shadow(0 0 30px rgba(255, 215, 0, 0.5))',
-          }}
-          onError={(e: SyntheticEvent<HTMLImageElement>) => {
-            e.currentTarget.src = getDefaultAvatarUrl();
-          }}
-        />
-      </div>
-
-      {/* Back — branded EVG card-back (shown during the flip, never black) */}
-      <div
-        className="absolute inset-3 flex flex-col items-center justify-center rounded-[1.6rem] text-center"
-        style={{
-          transform: 'rotateY(180deg)',
-          backfaceVisibility: 'hidden',
-          WebkitBackfaceVisibility: 'hidden',
-          background: 'linear-gradient(150deg, #001E41 0%, #00264f 45%, #004170 100%)',
-          border: '4px solid #D4AF37',
-          boxShadow: '0 0 60px rgba(212,175,55,0.55), inset 0 0 40px rgba(0,0,0,0.5)',
-        }}
-      >
-        <div className="text-6xl drop-shadow-[0_0_18px_rgba(212,175,55,0.8)]">🏆</div>
-        <div className="mt-3 font-display text-3xl font-black uppercase tracking-widest text-fifa-gold">
-          EVG
-        </div>
-        <div className="font-display text-sm font-bold uppercase tracking-[0.3em] text-white/80">
-          Ultimate Team
-        </div>
-      </div>
-    </motion.div>
-  </div>
-);
-
 export const SquadDiscovery: React.FC<SquadDiscoveryProps> = ({ currentUserId, onComplete }) => {
   const navigate = useNavigate();
-  const [phase, setPhase] = useState<Phase>('loading');
-  const [players, setPlayers] = useState<ParticipantWithRank[]>([]);
-  const [index, setIndex] = useState(0);
+  const [players, setPlayers] = useState<ParticipantWithRank[] | null>(null);
 
   useEffect(() => {
     let active = true;
-    const fetchOthers = async () => {
-      try {
-        const all = await getLeaderboard();
-        const others = shuffle(all.filter((p) => p.id !== currentUserId));
-        await Promise.all(
-          others.map((player) => preloadImage(getAvatarUrl(player.name)))
-        );
-        if (active) {
-          setPlayers(others);
-          setPhase('pack');
-        }
-      } catch (error) {
+    getLeaderboard()
+      .then((all) => {
+        if (active) setPlayers(shuffle(all.filter((p) => p.id !== currentUserId)));
+      })
+      .catch((error) => {
         console.error('Failed to load squad for discovery:', error);
         if (active) onComplete(); // fail open: don't trap the groom
-      }
-    };
-    fetchOthers();
+      });
     return () => {
       active = false;
     };
   }, [currentUserId, onComplete]);
 
-  const total = players.length;
-  const current = players[index];
+  if (!players) {
+    return (
+      <div
+        className="fixed inset-0 z-[9999] flex items-center justify-center"
+        style={{ background: 'radial-gradient(circle at center, #16243f 0%, #0A1628 70%)' }}
+      >
+        <div className="loading-spinner" />
+      </div>
+    );
+  }
 
-  const handleAdvance = () => {
-    if (index + 1 < total) {
-      setIndex((i) => i + 1);
-    } else {
-      setPhase('done');
-    }
-  };
+  const items: RevealItem[] = players.map((p) => ({
+    kind: 'player',
+    name: p.name,
+    cardSrc: getAvatarUrl(p.name),
+  }));
 
   const handleGoCompose = () => {
     navigate('/team?edit');
@@ -148,121 +74,40 @@ export const SquadDiscovery: React.FC<SquadDiscoveryProps> = ({ currentUserId, o
   };
 
   return (
-    <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden px-4"
-      style={{ background: 'radial-gradient(circle at center, #1A2942 0%, #0A1628 100%)' }}
-    >
-      {/* Loading */}
-      {phase === 'loading' && <div className="loading-spinner" />}
-
-      {/* Pack to open */}
-      {phase === 'pack' && (
-        <motion.button
-          type="button"
-          onClick={() => setPhase('revealing')}
-          className="flex flex-col items-center focus:outline-none"
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-        >
-          <motion.div
-            className="w-64 h-80 sm:w-72 sm:h-96 rounded-3xl flex items-center justify-center relative overflow-hidden"
-            style={{
-              background: 'linear-gradient(135deg, #D4AF37 0%, #000 100%)',
-              border: '4px solid #D4AF37',
-              boxShadow: '0 0 100px rgba(212,175,55,0.6), 0 0 200px rgba(212,175,55,0.3)',
-            }}
-            animate={{ scale: [1, 1.04, 1], y: [0, -8, 0] }}
-            transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            <div className="text-center px-4 relative z-10">
-              <div className="font-display text-4xl sm:text-5xl font-black text-white uppercase tracking-wider">
-                PACK
-              </div>
-              <div className="font-display text-2xl sm:text-3xl font-black text-fifa-gold uppercase tracking-widest mt-1">
-                ÉQUIPE
-              </div>
-              <div className="mt-6 text-white/90 text-sm uppercase tracking-widest">
-                Tape pour découvrir ton équipe
-              </div>
-            </div>
-          </motion.div>
-          <p className="mt-6 text-text-secondary text-sm uppercase tracking-widest">
-            {total} coéquipiers à révéler
-          </p>
-        </motion.button>
-      )}
-
-      {/* Sequential reveal */}
-      {phase === 'revealing' && current && (
-        <button
-          type="button"
-          onClick={handleAdvance}
-          className="absolute inset-0 flex flex-col items-center justify-center border-0 bg-transparent p-0 appearance-none focus:outline-none"
-          style={{ WebkitTapHighlightColor: 'transparent' }}
-        >
-          <div className="absolute top-8 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-white/10 text-white text-sm font-bold tracking-widest">
-            {index + 1} / {total}
-          </div>
-
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={current.id}
-              className="flex flex-col items-center bg-transparent"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.18 } }}
-            >
-              <FlipCard name={current.name} src={getAvatarUrl(current.name)} />
-              <motion.div
-                className="mt-4 font-display text-2xl sm:text-3xl font-black text-white uppercase tracking-wide"
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.45, duration: 0.3 }}
-              >
-                {current.name}
-              </motion.div>
-            </motion.div>
-          </AnimatePresence>
-
-          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 text-text-secondary text-sm uppercase tracking-widest animate-pulse">
-            {index + 1 < total ? 'Tape pour le suivant' : 'Tape pour terminer'}
-          </div>
-        </button>
-      )}
-
-      {/* Done */}
-      {phase === 'done' && (
-        <motion.div
-          className="text-center"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <h2 className="font-display text-3xl sm:text-5xl font-black uppercase tracking-wider text-gradient-psg">
+    <PackOpeningExperience
+      tier="ultimate"
+      items={items}
+      packTitle="Pack Équipe"
+      packSubtitle={`${items.length} coéquipiers à révéler`}
+      onComplete={onComplete}
+      doneCta={(close) => (
+        <div className="text-center">
+          <h2 className="font-display text-3xl font-black uppercase tracking-wider text-gradient-psg sm:text-5xl">
             Ton équipe est complète !
           </h2>
-          <p className="text-text-secondary mt-3">
+          <p className="mt-3 text-text-secondary">
             À toi de jouer : répartis tout le monde sur le terrain pour le five.
           </p>
-          <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <button
               type="button"
               onClick={handleGoCompose}
-              className="px-8 py-3 rounded-xl font-display font-black uppercase tracking-wider text-white"
+              className="rounded-xl px-8 py-3 font-display font-black uppercase tracking-wider text-white"
               style={{ background: 'linear-gradient(135deg, #DA291C 0%, #A02115 100%)' }}
             >
               ⚽ Compose ton équipe
             </button>
             <button
               type="button"
-              onClick={onComplete}
-              className="px-8 py-3 rounded-xl font-display font-bold uppercase tracking-wider text-white border border-white/20"
+              onClick={close}
+              className="rounded-xl border border-white/20 px-8 py-3 font-display font-bold uppercase tracking-wider text-white"
               style={{ background: 'rgba(255,255,255,0.06)' }}
             >
               Plus tard
             </button>
           </div>
-        </motion.div>
+        </div>
       )}
-    </div>
+    />
   );
 };

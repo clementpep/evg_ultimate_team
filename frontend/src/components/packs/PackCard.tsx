@@ -1,12 +1,14 @@
 /**
- * Pack Card Component
+ * PackCard - one pack tier on the Packs page.
  *
- * Displays an individual pack with FIFA/PSG styling following DESIGN_SYSTEM.md
+ * Shows the real foil-pack artwork (transparent contour -> object-contain +
+ * drop-shadow glow, never a rectangular background) with the count, cost and
+ * open/buy actions.
  */
 
 import { motion } from 'framer-motion';
 import { PACK_CONFIG, PackTier } from '../../types/pack';
-import { IoMdCheckmarkCircle } from 'react-icons/io';
+import { PACK_ART } from '@/assets/packArt';
 
 interface PackCardProps {
   tier: PackTier;
@@ -19,131 +21,86 @@ interface PackCardProps {
 
 export const PackCard: React.FC<PackCardProps> = ({ tier, count, canOpen, userCredits, onOpen, onPurchase }) => {
   const config = PACK_CONFIG[tier];
+  const art = PACK_ART[tier];
   const canPurchase = userCredits >= config.cost;
 
   return (
-    <motion.div
-      className="relative"
-      whileHover={canOpen ? { scale: 1.05 } : {}}
-      whileTap={canOpen ? { scale: 0.98 } : {}}
+    <div
+      className="relative flex flex-col items-center overflow-hidden rounded-2xl border p-5 sm:p-6"
+      style={{
+        background: 'linear-gradient(160deg, rgba(26,41,66,0.85) 0%, rgba(10,22,40,0.95) 100%)',
+        borderColor: canOpen ? art.accent : 'rgba(255,255,255,0.08)',
+        boxShadow: canOpen ? `0 0 28px ${art.glow}` : 'none',
+      }}
     >
-      <div
-        className="pack-card relative overflow-hidden rounded-2xl p-4 sm:p-6 md:p-8 border-2 transition-all"
-        style={{
-          background: 'linear-gradient(135deg, #1A2942 0%, #0A1628 100%)',
-          borderColor: config.color,
-          boxShadow: canOpen
-            ? `0 0 25px ${config.glowColor}`
-            : '0 0 10px rgba(255, 255, 255, 0.05)',
-        }}
-      >
-        {/* Animated glow background - only when can open */}
-        {canOpen && (
-          <div
-            className="absolute inset-0 opacity-30 animate-pulse"
-            style={{
-              background: `radial-gradient(circle at center, ${config.color} 0%, transparent 70%)`,
-            }}
-          />
-        )}
-
-        {/* Content */}
-        <div className="relative z-10 text-center">
-          {/* Pack Name */}
-          <h3
-            className="font-display text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3 uppercase tracking-wider"
-            style={{ color: config.color }}
-          >
-            {config.name}
-          </h3>
-
-          {/* Pack Count */}
-          <div className="mb-3 sm:mb-4">
-            <div
-              className="font-numbers text-4xl sm:text-5xl md:text-6xl font-black"
-              style={{ color: canOpen ? config.color : '#4A5568' }}
-            >
-              {count}
-            </div>
-            <div className="text-text-secondary text-xs sm:text-sm uppercase tracking-wide mt-1">
-              {count === 0 ? 'Aucun pack' : count === 1 ? 'Pack disponible' : 'Packs disponibles'}
-            </div>
-          </div>
-
-          {/* Cost/Action */}
-          <div className="text-text-tertiary text-xs sm:text-sm mb-3 sm:mb-4">
-            <span className="font-semibold">{config.cost} crédits</span>
-          </div>
-
-          {/* Buttons */}
-          <div className="space-y-2">
-            {canOpen ? (
-              <button className="btn-primary w-full" onClick={(e) => { e.stopPropagation(); onOpen(); }}>
-                OUVRIR
-              </button>
-            ) : canPurchase ? (
-              <>
-                <button
-                  className="w-full py-3 px-4 rounded-lg font-bold uppercase tracking-wide transition-all duration-300 relative overflow-hidden group"
-                  style={{
-                    background: `linear-gradient(135deg, ${config.color}dd 0%, ${config.color} 50%, ${config.color}dd 100%)`,
-                    color: '#fff',
-                    border: `2px solid ${config.color}`,
-                    boxShadow: `0 4px 15px ${config.glowColor}40, 0 0 20px ${config.glowColor}30`,
-                  }}
-                  onClick={(e) => { e.stopPropagation(); onPurchase(); }}
-                >
-                  <span className="relative z-10 flex items-center justify-center gap-2">
-                    <span>ACHETER</span>
-                    <span className="text-sm">({config.cost} crédits)</span>
-                  </span>
-                  <div
-                    className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                    style={{
-                      background: `linear-gradient(135deg, ${config.color} 0%, ${config.color}ee 50%, ${config.color} 100%)`,
-                    }}
-                  />
-                </button>
-                <div className="text-xs text-fifa-green flex items-center justify-center gap-1 font-semibold">
-                  <IoMdCheckmarkCircle className="text-sm" /> {userCredits} crédits disponibles
-                </div>
-              </>
-            ) : (
-              <>
-                <button
-                  className="w-full py-3 px-4 rounded-lg font-bold uppercase tracking-wide cursor-not-allowed"
-                  style={{
-                    background: 'linear-gradient(135deg, #2D3748 0%, #1A202C 100%)',
-                    color: '#718096',
-                    border: '2px solid #4A5568',
-                  }}
-                  disabled
-                >
-                  <span className="flex items-center justify-center gap-2">
-                    <span>ACHETER</span>
-                    <span className="text-sm">({config.cost} crédits)</span>
-                  </span>
-                </button>
-                <div className="text-xs text-red-400 flex items-center justify-center gap-1">
-                  Crédits insuffisants ({userCredits}/{config.cost})
-                </div>
-              </>
-            )}
-          </div>
+      {/* Count badge */}
+      {count > 0 && (
+        <div
+          className="absolute right-3 top-3 z-10 flex h-9 min-w-9 items-center justify-center rounded-full px-2 font-numbers text-base font-black text-bg-primary shadow-lg"
+          style={{ background: art.accent }}
+        >
+          {count}
         </div>
+      )}
 
-        {/* Shimmer effect on hover for available packs */}
-        {canOpen && (
-          <div
-            className="absolute inset-0 pointer-events-none"
+      {/* Pack artwork */}
+      <motion.img
+        src={art.pack}
+        alt={config.name}
+        loading="lazy"
+        className="h-44 w-auto object-contain sm:h-52"
+        style={{
+          filter: canOpen
+            ? `drop-shadow(0 0 26px ${art.glow}) drop-shadow(0 0 12px ${art.glow})`
+            : 'grayscale(0.5) brightness(0.7)',
+          opacity: count > 0 || canPurchase ? 1 : 0.55,
+        }}
+        animate={canOpen ? { y: [0, -8, 0] } : {}}
+        transition={canOpen ? { duration: 3.2, repeat: Infinity, ease: 'easeInOut' } : {}}
+      />
+
+      <h3
+        className="mt-4 font-display text-lg font-black uppercase tracking-wider sm:text-xl"
+        style={{ color: art.accent }}
+      >
+        {config.name}
+      </h3>
+      <div className="mt-0.5 text-xs uppercase tracking-wide text-text-secondary">
+        {count === 0 ? 'Aucun pack' : count === 1 ? '1 pack disponible' : `${count} packs disponibles`}
+      </div>
+
+      {/* Action */}
+      <div className="mt-4 w-full">
+        {canOpen ? (
+          <button
+            type="button"
+            onClick={onOpen}
+            className="w-full rounded-xl py-3 font-display text-base font-black uppercase tracking-wider text-bg-primary transition-transform active:scale-95"
+            style={{ background: `linear-gradient(135deg, ${art.accent} 0%, ${config.color} 100%)`, boxShadow: `0 6px 20px ${art.glow}` }}
+          >
+            Ouvrir
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={onPurchase}
+            disabled={!canPurchase}
+            className="w-full rounded-xl border py-3 font-display text-sm font-bold uppercase tracking-wide transition-transform active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
             style={{
-              background: 'linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.1) 50%, transparent 100%)',
-              backgroundSize: '200% 100%',
-              animation: 'shimmer 3s ease-in-out infinite',
+              background: canPurchase ? `${art.accent}1f` : 'rgba(255,255,255,0.04)',
+              borderColor: canPurchase ? `${art.accent}66` : 'rgba(255,255,255,0.1)',
+              color: canPurchase ? art.accent : '#718096',
             }}
-          />
+          >
+            Acheter · {config.cost} crédits
+          </button>
+        )}
+        {!canOpen && (
+          <div className={`mt-2 text-center text-xs ${canPurchase ? 'text-fifa-green' : 'text-red-400'}`}>
+            {canPurchase ? `${userCredits} crédits disponibles` : `Crédits insuffisants (${userCredits}/${config.cost})`}
+          </div>
         )}
       </div>
-    </motion.div>
+    </div>
   );
 };

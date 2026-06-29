@@ -22,9 +22,9 @@ import { useSquadDiscovery } from '@hooks/useSquadDiscovery';
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading, user } = useAuth();
   const isGroom = !!user?.is_groom;
-  // Non-groom participants reveal their own card; the groom (Paul) discovers
-  // the whole squad instead, so each path is gated by its own user id.
-  const { shouldShowReveal, markAsRevealed } = useFirstLogin(isGroom ? undefined : user?.id);
+  // Everyone opens an Ultimate pack revealing their own FUT card on first login.
+  // The groom (Paul) then also opens the "Pack Équipe" to discover the squad.
+  const { shouldShowReveal, markAsRevealed } = useFirstLogin(user?.id);
   const { shouldShowDiscovery, markDiscovered } = useSquadDiscovery(isGroom ? user?.id : undefined);
   const { shouldTriggerReveal, resetReveal } = useCardReveal();
   const [showReveal, setShowReveal] = useState(false);
@@ -42,22 +42,21 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     }
   }, [user?.id]);
 
-  // Trigger card reveal animation immediately after authentication (first login).
-  // The admin (Clément) plays too, so he gets his own card like any participant;
-  // only the groom is routed to squad discovery instead.
+  // Own-card reveal on first login (everyone, including the groom).
   useEffect(() => {
-    if (isAuthenticated && shouldShowReveal && !isLoading && user && !isGroom) {
+    if (isAuthenticated && shouldShowReveal && !isLoading && user) {
       // Small delay to let auth settle
       setTimeout(() => setShowReveal(true), 300);
     }
-  }, [isAuthenticated, shouldShowReveal, isLoading, user, isGroom]);
+  }, [isAuthenticated, shouldShowReveal, isLoading, user]);
 
-  // Trigger squad discovery for the groom on first login
+  // Squad discovery for the groom — only once the own-card reveal is done, so
+  // Paul opens his own pack first, then the team pack.
   useEffect(() => {
-    if (isAuthenticated && shouldShowDiscovery && !isLoading && user && isGroom) {
+    if (isAuthenticated && shouldShowDiscovery && !isLoading && user && isGroom && !shouldShowReveal) {
       setTimeout(() => setShowDiscovery(true), 300);
     }
-  }, [isAuthenticated, shouldShowDiscovery, isLoading, user, isGroom]);
+  }, [isAuthenticated, shouldShowDiscovery, isLoading, user, isGroom, shouldShowReveal]);
 
   // Trigger animation on demand ("Voir ma carte" from profile) — always the
   // user's own FUT card, including for the groom. Squad discovery stays reserved
@@ -69,11 +68,16 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   }, [shouldTriggerReveal, isAuthenticated, user]);
 
   const handleRevealComplete = () => {
+    const wasFirstLogin = shouldShowReveal;
     if (shouldShowReveal) {
       markAsRevealed(); // Only mark as revealed if it was the first login
     }
     setShowReveal(false);
     resetReveal(); // Reset the manual trigger
+    // After the own-card pack, the groom opens the team pack.
+    if (wasFirstLogin && isGroom && shouldShowDiscovery) {
+      setShowDiscovery(true);
+    }
   };
 
   const handleDiscoveryComplete = () => {
