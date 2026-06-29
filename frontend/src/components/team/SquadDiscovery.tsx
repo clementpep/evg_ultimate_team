@@ -41,6 +41,66 @@ const preloadImage = (src: string): Promise<void> =>
     img.src = src;
   });
 
+/**
+ * FlipCard - FUT-style reveal: the card mounts face-down (branded navy/gold
+ * back) and flips to reveal the player's FUT card. Both faces use
+ * backface-visibility:hidden so the rotation never exposes a blank/black face.
+ */
+const FlipCard: React.FC<{ name: string; src: string }> = ({ name, src }) => (
+  <div style={{ perspective: 1400 }}>
+    <motion.div
+      className="relative h-[400px] w-72 sm:h-[450px] sm:w-80"
+      style={{ transformStyle: 'preserve-3d' }}
+      initial={{ rotateY: 180, scale: 0.82 }}
+      animate={{ rotateY: 0, scale: 1 }}
+      transition={{
+        rotateY: { duration: 0.6, ease: [0.22, 1, 0.36, 1] },
+        scale: { duration: 0.65, ease: [0.34, 1.3, 0.64, 1] },
+      }}
+    >
+      {/* Front — the player's FUT card */}
+      <div
+        className="absolute inset-0 flex items-center justify-center"
+        style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
+      >
+        <img
+          src={src}
+          alt={name}
+          className="h-full w-full object-contain"
+          style={{
+            filter:
+              'drop-shadow(0 0 60px rgba(212, 175, 55, 0.7)) drop-shadow(0 0 30px rgba(255, 215, 0, 0.5))',
+          }}
+          onError={(e: SyntheticEvent<HTMLImageElement>) => {
+            e.currentTarget.src = getDefaultAvatarUrl();
+          }}
+        />
+      </div>
+
+      {/* Back — branded EVG card-back (shown during the flip, never black) */}
+      <div
+        className="absolute inset-3 flex flex-col items-center justify-center rounded-[1.6rem] text-center"
+        style={{
+          transform: 'rotateY(180deg)',
+          backfaceVisibility: 'hidden',
+          WebkitBackfaceVisibility: 'hidden',
+          background: 'linear-gradient(150deg, #001E41 0%, #00264f 45%, #004170 100%)',
+          border: '4px solid #D4AF37',
+          boxShadow: '0 0 60px rgba(212,175,55,0.55), inset 0 0 40px rgba(0,0,0,0.5)',
+        }}
+      >
+        <div className="text-6xl drop-shadow-[0_0_18px_rgba(212,175,55,0.8)]">🏆</div>
+        <div className="mt-3 font-display text-3xl font-black uppercase tracking-widest text-fifa-gold">
+          EVG
+        </div>
+        <div className="font-display text-sm font-bold uppercase tracking-[0.3em] text-white/80">
+          Ultimate Team
+        </div>
+      </div>
+    </motion.div>
+  </div>
+);
+
 export const SquadDiscovery: React.FC<SquadDiscoveryProps> = ({ currentUserId, onComplete }) => {
   const navigate = useNavigate();
   const [phase, setPhase] = useState<Phase>('loading');
@@ -148,26 +208,19 @@ export const SquadDiscovery: React.FC<SquadDiscoveryProps> = ({ currentUserId, o
             <motion.div
               key={current.id}
               className="flex flex-col items-center bg-transparent"
-              initial={{ opacity: 0, scale: 0.92, y: 24 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.97, y: -18 }}
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.18 } }}
             >
-              <motion.img
-                src={getAvatarUrl(current.name)}
-                alt={current.name}
-                className="w-72 h-[400px] sm:w-80 sm:h-[450px] object-contain"
-                style={{
-                  filter:
-                    'drop-shadow(0 0 60px rgba(212, 175, 55, 0.7)) drop-shadow(0 0 30px rgba(255, 215, 0, 0.5))',
-                }}
-                onError={(e: SyntheticEvent<HTMLImageElement>) => {
-                  e.currentTarget.src = getDefaultAvatarUrl();
-                }}
-              />
-              <div className="mt-4 font-display text-2xl sm:text-3xl font-black text-white uppercase tracking-wide">
+              <FlipCard name={current.name} src={getAvatarUrl(current.name)} />
+              <motion.div
+                className="mt-4 font-display text-2xl sm:text-3xl font-black text-white uppercase tracking-wide"
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.45, duration: 0.3 }}
+              >
                 {current.name}
-              </div>
+              </motion.div>
             </motion.div>
           </AnimatePresence>
 
