@@ -62,7 +62,6 @@ export const ProfileDropdown: React.FC<ProfileDropdownProps> = ({
     <div className="relative" ref={dropdownRef}>
       {/* Avatar Button - Responsive Mobile-First */}
       <motion.button
-        layoutId="player-card-avatar"
         onClick={() => setIsOpen(!isOpen)}
         className="
           w-12 h-12 sm:w-11 sm:h-11 md:w-12 md:h-12

@@ -89,6 +89,14 @@ class Participant(Base):
         comment="Credits for purchasing packs (1 point earned = 1 credit)"
     )
 
+    # Points multiplier - applied once on next challenge validation, then reset to 1
+    points_multiplier = Column(
+        Integer,
+        default=1,
+        nullable=False,
+        comment="Multiplier for next challenge points (from pack reward), resets to 1 after use"
+    )
+
     # Pack Inventory (Phase 2 feature, prepared for future use)
     current_packs = Column(
         JSON,

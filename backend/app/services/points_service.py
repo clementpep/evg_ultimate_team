@@ -164,16 +164,23 @@ def award_challenge_points(
         from app.utils.exceptions import ChallengeNotFoundError
         raise ChallengeNotFoundError(challenge_id)
 
+    # Apply points multiplier (from "×2 prochain défi" pack reward)
+    multiplier = participant.points_multiplier or 1
+    effective_points = challenge.points * multiplier
+    if multiplier > 1:
+        participant.points_multiplier = 1
+        logger.info(f"Applied ×{multiplier} multiplier for participant {participant_id}: {challenge.points} → {effective_points} pts")
+
     # Create transaction
     transaction = PointsTransaction.create_challenge_transaction(
         participant_id=participant_id,
         challenge_id=challenge_id,
-        points=challenge.points,
+        points=effective_points,
         admin_id=admin_id
     )
 
     # Update participant points
-    participant.add_points(challenge.points)
+    participant.add_points(effective_points)
 
     db.add(transaction)
     db.commit()
@@ -181,8 +188,8 @@ def award_challenge_points(
 
     log_points_transaction(
         participant_id=participant_id,
-        amount=challenge.points,
-        reason=f"Completed challenge: {challenge.title}",
+        amount=effective_points,
+        reason=f"Completed challenge: {challenge.title}" + (f" (×{multiplier})" if multiplier > 1 else ""),
         admin_id=admin_id
     )
 

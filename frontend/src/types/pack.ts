@@ -58,6 +58,7 @@ export interface PackOpenResult {
     rarity: string;
     effects: string[];
   };
+  applied_effect?: string;
 }
 
 export interface PackOpening {

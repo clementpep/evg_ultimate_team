@@ -38,15 +38,20 @@ def ensure_schema(db: Session) -> None:
         db.execute(text(
             "ALTER TABLE participants ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT 0"
         ))
-        # Flag Clément as the admin on pre-existing databases. Historical MySQL
-        # imports may have mangled the accent in the stored name, so we also
-        # fall back to the seeded participant id=2 (stable in this project).
         db.execute(text(
             "UPDATE participants SET is_admin = 1 "
             "WHERE name = 'Clément P.' OR id = 2"
         ))
         db.commit()
         logger.info("Migration complete: participants.is_admin")
+
+    if "points_multiplier" not in columns:
+        logger.info("Migrating: adding participants.points_multiplier column")
+        db.execute(text(
+            "ALTER TABLE participants ADD COLUMN points_multiplier INTEGER NOT NULL DEFAULT 1"
+        ))
+        db.commit()
+        logger.info("Migration complete: participants.points_multiplier")
 
 
 def seed_participants(db: Session) -> None:
