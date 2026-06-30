@@ -128,6 +128,7 @@ class PackOpenResponse(BaseModel):
     reward: PackRewardResponse
     new_inventory: PackInventoryResponse
     animation_data: dict
+    applied_effect: Optional[str] = Field(None, description="Description of applied in-app effect, if any")
 
     model_config = {
         "json_schema_extra": {

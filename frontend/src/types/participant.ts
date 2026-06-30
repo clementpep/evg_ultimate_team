@@ -11,6 +11,7 @@ export interface Participant {
   is_groom: boolean;
   total_points: number;
   pack_credits: number;
+  points_multiplier: number;
   current_packs: PackInventory;
   created_at: string;
   updated_at: string;
@@ -30,6 +31,7 @@ export interface ParticipantSummary {
   is_groom: boolean;
   total_points: number;
   pack_credits: number;
+  points_multiplier?: number;
 }
 
 export interface ParticipantWithRank extends ParticipantSummary {

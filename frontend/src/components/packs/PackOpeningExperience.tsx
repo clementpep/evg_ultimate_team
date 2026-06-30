@@ -166,7 +166,7 @@ export const PackOpeningExperience: React.FC<PackOpeningExperienceProps> = ({
 
       {/* ---------- REVEAL ---------- */}
       {phase === 'reveal' && current && (
-        <div className="relative flex w-full flex-col items-center" style={{ perspective: 1500 }}>
+        <div className="relative flex w-full flex-col items-center">
           {multi && (
             <div className="absolute -top-2 left-1/2 z-10 -translate-x-1/2 rounded-full bg-white/10 px-4 py-1 text-sm font-bold tracking-widest text-white sm:-top-4">
               {index + 1} / {items.length}
@@ -177,11 +177,10 @@ export const PackOpeningExperience: React.FC<PackOpeningExperienceProps> = ({
             <motion.div
               key={index}
               className="flex flex-col items-center"
-              initial={{ rotateY: -105, scale: 0.55, opacity: 0 }}
-              animate={{ rotateY: 0, scale: 1, opacity: 1 }}
+              initial={{ scale: 0.55, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
               exit={{ opacity: 0, scale: 0.92, transition: { duration: 0.16 } }}
-              transition={{ duration: 0.62, ease: [0.16, 1, 0.3, 1] }}
-              style={{ transformStyle: 'preserve-3d' }}
+              transition={{ duration: 0.52, ease: [0.16, 1, 0.3, 1] }}
             >
               {current.kind === 'reward' ? (
                 <RewardCard reward={current.reward} art={art} />
@@ -221,15 +220,17 @@ export const PackOpeningExperience: React.FC<PackOpeningExperienceProps> = ({
 
 /** Reward written into a tier card template's empty centre. */
 const RewardCard: React.FC<{ reward: PackReward; art: typeof PACK_ART[PackTier] }> = ({ reward, art }) => (
-  <div
-    className="relative aspect-[2/3] w-[min(72vw,19rem)] sm:w-80"
-    style={{ filter: `drop-shadow(0 0 45px ${art.glow}) drop-shadow(0 0 18px ${art.glow})` }}
-  >
-    <img src={art.card} alt="" className="h-full w-full object-contain" />
+  <div className="relative aspect-[2/3] w-[min(72vw,19rem)] sm:w-80">
+    <img
+      src={art.card}
+      alt=""
+      className="h-full w-full object-contain"
+      style={{ filter: `drop-shadow(0 0 40px ${art.glow}) drop-shadow(0 0 16px ${art.glow})` }}
+    />
     <div className="absolute inset-0 flex flex-col items-center justify-center px-[15%] pb-[15%] pt-[20%] text-center">
       <span
         className="mb-3 rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-[0.18em]"
-        style={{ background: `${art.accent}22`, color: art.accent, border: `1px solid ${art.accent}66` }}
+        style={{ color: art.accent, border: `1px solid ${art.accent}66` }}
       >
         {RARITY_LABEL[reward.rarity]}
       </span>

@@ -62,6 +62,9 @@ export const PacksPage = () => {
     if (result) {
       setOpenResult(result);
       setShowModal(true);
+      if (result.applied_effect) {
+        setTimeout(() => showToast(`⚡ ${result.applied_effect}`, 'success'), 1000);
+      }
     }
   };
 

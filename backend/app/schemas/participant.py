@@ -106,6 +106,7 @@ class ParticipantResponse(ParticipantBase):
     id: int = Field(..., description="Unique participant ID")
     total_points: int = Field(..., description="Current total points (never decreases)")
     pack_credits: int = Field(..., description="Credits available for purchasing packs")
+    points_multiplier: int = Field(default=1, description="Multiplier for next challenge (from pack reward)")
     current_packs: dict = Field(
         ...,
         description="Pack counts for each tier (bronze, silver, gold, ultimate)"
@@ -148,6 +149,7 @@ class ParticipantSummary(BaseModel):
     is_groom: bool
     total_points: int
     pack_credits: int
+    points_multiplier: int = 1
 
     class Config:
         """Pydantic configuration."""

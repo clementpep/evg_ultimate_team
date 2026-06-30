@@ -363,6 +363,9 @@ def open_pack(db: Session, participant_id: int, tier: str) -> PackOpenResponse:
     )
     db.add(pack_opening)
 
+    # Apply immediate reward effects
+    applied_effect = _apply_reward_effect(participant, reward)
+
     # Commit changes
     db.commit()
     db.refresh(participant)
@@ -390,8 +393,31 @@ def open_pack(db: Session, participant_id: int, tier: str) -> PackOpenResponse:
         success=True,
         reward=reward_response,
         new_inventory=new_inventory,
-        animation_data=animation_data
+        animation_data=animation_data,
+        applied_effect=applied_effect,
     )
+
+
+def _apply_reward_effect(participant: Participant, reward: PackReward) -> str | None:
+    """
+    Apply immediate in-app effects for specific pack rewards.
+
+    Currently handled:
+    - "×2 prochain défi": sets points_multiplier to 2
+    - "+50 crédits": adds 50 pack credits immediately
+
+    Returns a human-readable description of the applied effect, or None.
+    """
+    name = reward.reward_name.lower()
+    if "×2" in name or "x2" in name:
+        participant.points_multiplier = 2
+        logger.info(f"Applied ×2 multiplier to participant {participant.id}")
+        return "×2 activé ! Ton prochain défi rapportera le double de points."
+    elif "+50 crédit" in name:
+        participant.pack_credits += 50
+        logger.info(f"Applied +50 credits to participant {participant.id}")
+        return "+50 crédits ajoutés à ton solde !"
+    return None
 
 
 def _get_animation_effects(rarity: str) -> list[str]:
