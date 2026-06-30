@@ -116,14 +116,21 @@ export const PackOpeningExperience: React.FC<PackOpeningExperienceProps> = ({
           animate={{ opacity: 1, scale: 1 }}
           style={{ WebkitTapHighlightColor: 'transparent' }}
         >
-          <motion.img
-            src={art.pack}
-            alt="Pack"
-            className="h-[min(62vh,30rem)] w-auto object-contain"
-            style={{ filter: `drop-shadow(0 0 60px ${art.glow}) drop-shadow(0 0 28px ${art.glow})` }}
+          <motion.div
+            className="relative"
             animate={{ y: [0, -12, 0], rotate: [-1.2, 1.2, -1.2] }}
             transition={{ duration: 3.4, repeat: Infinity, ease: 'easeInOut' }}
-          />
+          >
+            <div
+              className="absolute -inset-[25%] pointer-events-none"
+              style={{ background: `radial-gradient(ellipse at center, ${art.glow} 0%, transparent 65%)` }}
+            />
+            <img
+              src={art.pack}
+              alt="Pack"
+              className="relative h-[min(62vh,30rem)] w-auto object-contain"
+            />
+          </motion.div>
           {packTitle && (
             <div className="mt-5 font-display text-2xl font-black uppercase tracking-widest text-white sm:text-3xl">
               {packTitle}
@@ -152,15 +159,22 @@ export const PackOpeningExperience: React.FC<PackOpeningExperienceProps> = ({
             animate={{ width: 900, height: 900, opacity: [0.2, 0.95, 0] }}
             transition={{ duration: 0.7, ease: 'easeOut' }}
           />
-          <motion.img
-            src={art.pack}
-            alt="Pack"
-            className="h-[min(62vh,30rem)] w-auto object-contain"
-            style={{ filter: `drop-shadow(0 0 70px ${art.glow})` }}
+          <motion.div
+            className="relative"
             initial={{ scale: 1, opacity: 1, rotate: 0 }}
             animate={{ scale: [1, 1.12, 1.4], opacity: [1, 1, 0], rotate: [0, -3, 4] }}
             transition={{ duration: 0.7, ease: 'easeIn' }}
-          />
+          >
+            <div
+              className="absolute -inset-[25%] pointer-events-none"
+              style={{ background: `radial-gradient(ellipse at center, ${art.glow} 0%, transparent 65%)` }}
+            />
+            <img
+              src={art.pack}
+              alt="Pack"
+              className="relative h-[min(62vh,30rem)] w-auto object-contain"
+            />
+          </motion.div>
         </div>
       )}
 

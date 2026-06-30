@@ -5,6 +5,7 @@
 import apiClient from './api';
 import { APIResponse } from '@/types/api';
 import { PackRewardAdmin, PackRewardCreate, PackRewardUpdate } from '@/types/pack';
+import { clearAppState } from './authService';
 
 /**
  * Reset the entire database (DANGER ZONE)
@@ -16,6 +17,7 @@ import { PackRewardAdmin, PackRewardCreate, PackRewardUpdate } from '@/types/pac
  */
 export const resetDatabase = async (): Promise<{ success: boolean; message: string }> => {
   const response = await apiClient.post('/admin/reset-database');
+  clearAppState();
   return response.data;
 };
 

@@ -54,9 +54,17 @@ apiClient.interceptors.response.use(
       const status = error.response.status;
 
       if (status === 401) {
-        // Unauthorized - clear token and redirect to login
+        // Unauthorized - clear all app state and redirect to login.
+        // This also wipes first-login flags so a DB reset gives a
+        // fresh experience to every user.
         localStorage.removeItem('auth_token');
         localStorage.removeItem('current_user');
+        const toRemove: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key?.startsWith('evg_')) toRemove.push(key);
+        }
+        toRemove.forEach((k) => localStorage.removeItem(k));
         window.location.href = '/login';
       } else if (status === 403) {
         // Forbidden - user doesn't have permission

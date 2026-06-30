@@ -43,21 +43,30 @@ export const PackCard: React.FC<PackCardProps> = ({ tier, count, canOpen, userCr
         </div>
       )}
 
-      {/* Pack artwork */}
-      <motion.img
-        src={art.pack}
-        alt={config.name}
-        loading="lazy"
-        className="h-44 w-auto object-contain sm:h-52"
-        style={{
-          filter: canOpen
-            ? `drop-shadow(0 0 26px ${art.glow}) drop-shadow(0 0 12px ${art.glow})`
-            : 'grayscale(0.5) brightness(0.7)',
-          opacity: count > 0 || canPurchase ? 1 : 0.55,
-        }}
+      {/* Pack artwork — glow is a separate radial-gradient div so mobile
+           browsers never show a rectangular compositing-layer boundary. */}
+      <motion.div
+        className="relative"
         animate={canOpen ? { y: [0, -8, 0] } : {}}
         transition={canOpen ? { duration: 3.2, repeat: Infinity, ease: 'easeInOut' } : {}}
-      />
+      >
+        {canOpen && (
+          <div
+            className="absolute -inset-[15%] pointer-events-none"
+            style={{ background: `radial-gradient(ellipse at center, ${art.glow} 0%, transparent 70%)` }}
+          />
+        )}
+        <img
+          src={art.pack}
+          alt={config.name}
+          loading="lazy"
+          className="relative h-44 w-auto object-contain sm:h-52"
+          style={{
+            filter: canOpen ? 'none' : 'grayscale(0.5) brightness(0.7)',
+            opacity: count > 0 || canPurchase ? 1 : 0.55,
+          }}
+        />
+      </motion.div>
 
       <h3
         className="mt-4 font-display text-lg font-black uppercase tracking-wider sm:text-xl"

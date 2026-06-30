@@ -52,7 +52,7 @@ const emptyRewardForm = {
 };
 
 export const AdminDashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { showToast } = useToast();
   const { challenges, refetch: refetchChallenges } = useChallenges();
   const [participants, setParticipants] = useState<any[]>([]);
@@ -263,12 +263,11 @@ export const AdminDashboard: React.FC = () => {
     if (resetConfirmText !== 'RESET') return;
     try {
       const result = await resetDatabase();
-      showToast(result.message, 'success');
-      setShowResetConfirm(false);
-      setResetConfirmText('');
-      refreshParticipants();
-      refreshRewards();
-      refetchChallenges();
+      showToast(result.message + ' Redirection vers le login…', 'success');
+      setTimeout(() => {
+        logout();
+        window.location.href = '/login';
+      }, 1500);
     } catch (err: any) {
       showToast(err.response?.data?.detail || 'Erreur lors du reset', 'error');
     }

@@ -55,11 +55,25 @@ export const loginAdmin = async (username: string, password: string): Promise<Au
 };
 
 /**
+ * Remove all EVG app keys from localStorage (first-login flags, squad
+ * discovery, etc.) so a fresh DB reset gives users the first-login experience.
+ */
+export const clearAppState = (): void => {
+  const toRemove: string[] = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    if (key?.startsWith('evg_')) toRemove.push(key);
+  }
+  toRemove.forEach((k) => localStorage.removeItem(k));
+};
+
+/**
  * Logout current user.
  */
 export const logout = (): void => {
   localStorage.removeItem('auth_token');
   localStorage.removeItem('current_user');
+  clearAppState();
 };
 
 /**

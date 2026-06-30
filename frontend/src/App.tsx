@@ -30,14 +30,13 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   const [showReveal, setShowReveal] = useState(false);
   const [showDiscovery, setShowDiscovery] = useState(false);
 
-  // Check for reset query parameter to clear first-login localStorage
+  // Legacy: clear first-login flag via query parameter (superseded by
+  // automatic DB-reset detection in Layout, but kept for manual testing).
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('resetFirstLogin') === 'true' && user?.id) {
       const storageKey = `evg_has_seen_card_reveal_${user.id}`;
       localStorage.removeItem(storageKey);
-      console.log('✅ First login state reset successfully');
-      // Remove the query parameter from URL
       window.history.replaceState({}, '', window.location.pathname);
     }
   }, [user?.id]);
@@ -149,25 +148,37 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   // Fetch participant data and rank. The admin (Clément) is a real participant
   // too, so we fetch his stats as well.
+  // Also detects a DB reset (created_at changed) and forces re-login so every
+  // user gets the first-login experience again.
   useEffect(() => {
     if (!user) return;
 
     const fetchUserData = async () => {
       try {
-        // Import API functions dynamically to avoid circular dependencies
         const { getMyProfile } = await import('@services/participantService');
         const { getParticipantRank } = await import('@services/leaderboardService');
+        const { clearAppState } = await import('@services/authService');
 
-        // Fetch profile data
         const profile = await getMyProfile();
         setTotalPoints(profile.total_points);
 
-        // Fetch rank
+        // DB-reset detection: if the participant was re-created (different
+        // created_at), wipe all local flags and force a fresh login.
+        const checkpoint = localStorage.getItem('evg_db_checkpoint');
+        if (checkpoint && checkpoint !== profile.created_at) {
+          clearAppState();
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('current_user');
+          localStorage.setItem('evg_db_checkpoint', profile.created_at);
+          window.location.href = '/login';
+          return;
+        }
+        localStorage.setItem('evg_db_checkpoint', profile.created_at);
+
         const rankData = await getParticipantRank(user.id);
         setUserRank(rankData.rank);
       } catch (error) {
         console.error('Failed to fetch user data:', error);
-        // Set defaults on error
         setTotalPoints(0);
         setUserRank(0);
       }
